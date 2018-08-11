@@ -29,7 +29,7 @@ public class Combination {
     /**
      * 暂时默认为1
      */
-    private int purchaseNum;
+    private int purchaseNum = 1;
 
     /**
      * 暂时定为属性
