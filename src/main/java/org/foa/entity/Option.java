@@ -1,6 +1,10 @@
 package org.foa.entity;
 
+import org.springframework.data.annotation.Id;
+
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 
 /**
  * @author miaomuzhi
@@ -8,4 +12,10 @@ import javax.persistence.Entity;
  */
 @Entity
 public class Option {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String optionCode;
+
+
 }
