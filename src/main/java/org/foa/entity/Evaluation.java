@@ -1,10 +1,13 @@
 package org.foa.entity;
 
 
+import javax.persistence.Embeddable;
+
 /**
  * @author miaomuzhi
  * @since 2018/8/9
  */
+@Embeddable
 public class Evaluation {
     /**
      * |term1-term2|
