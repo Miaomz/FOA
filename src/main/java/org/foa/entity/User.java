@@ -26,36 +26,4 @@ public class User {
     @Embedded
     private UserInfo userInfo;
 
-    public User() {
-    }
-
-    public User(String userId, String password, UserInfo userInfo) {
-        this.userId = userId;
-        this.password = password;
-        this.userInfo = userInfo;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public UserInfo getUserInfo() {
-        return userInfo;
-    }
-
-    public void setUserInfo(UserInfo userInfo) {
-        this.userInfo = userInfo;
-    }
 }

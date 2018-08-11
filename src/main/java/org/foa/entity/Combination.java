@@ -1,11 +1,18 @@
 package org.foa.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
 /**
  * @author miaomuzhi
  * @since 2018/8/9
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Combination {
 
@@ -30,54 +37,4 @@ public class Combination {
     @Embedded
     private Evaluation evaluation;
 
-    public Combination() {
-    }
-
-    public Combination(long cid, String opt1, String opt2, int purchaseNum, Evaluation evaluation) {
-        this.cid = cid;
-        this.opt1 = opt1;
-        this.opt2 = opt2;
-        this.purchaseNum = purchaseNum;
-        this.evaluation = evaluation;
-    }
-
-    public long getCid() {
-        return cid;
-    }
-
-    public void setCid(long cid) {
-        this.cid = cid;
-    }
-
-    public String getOpt1() {
-        return opt1;
-    }
-
-    public void setOpt1(String opt1) {
-        this.opt1 = opt1;
-    }
-
-    public String getOpt2() {
-        return opt2;
-    }
-
-    public void setOpt2(String opt2) {
-        this.opt2 = opt2;
-    }
-
-    public int getPurchaseNum() {
-        return purchaseNum;
-    }
-
-    public void setPurchaseNum(int purchaseNum) {
-        this.purchaseNum = purchaseNum;
-    }
-
-    public Evaluation getEvaluation() {
-        return evaluation;
-    }
-
-    public void setEvaluation(Evaluation evaluation) {
-        this.evaluation = evaluation;
-    }
 }

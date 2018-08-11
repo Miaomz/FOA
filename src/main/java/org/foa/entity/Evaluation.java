@@ -1,12 +1,15 @@
 package org.foa.entity;
 
 
+import lombok.Data;
+
 import javax.persistence.Embeddable;
 
 /**
  * @author miaomuzhi
  * @since 2018/8/9
  */
+@Data
 @Embeddable
 public class Evaluation {
     /**
@@ -14,11 +17,4 @@ public class Evaluation {
      */
     private double difference;
 
-    public double getDifference() {
-        return difference;
-    }
-
-    public void setDifference(double difference) {
-        this.difference = difference;
-    }
 }

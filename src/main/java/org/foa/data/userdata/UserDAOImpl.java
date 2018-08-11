@@ -1,4 +1,7 @@
 package org.foa.data.userdata;
 
-public class UserDAOImpl {
+/**
+ * @author 王川源
+ */
+public class UserDAOImpl implements UserCustom {
 }

@@ -1,5 +1,7 @@
 package org.foa.entity;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
@@ -7,6 +9,7 @@ import javax.persistence.Embeddable;
  * @author miaomuzhi
  * @since 2018/8/11
  */
+@Data
 @Embeddable
 public class UserInfo {
 
@@ -16,19 +19,4 @@ public class UserInfo {
     @Column(name = "balance")
     private double balance;
 
-    public String getAccount() {
-        return account;
-    }
-
-    public void setAccount(String account) {
-        this.account = account;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
 }

@@ -1,4 +1,7 @@
 package org.foa.data.combinationdata;
 
-public class CombinationDAOImpl {
+/**
+ * @author 王川源
+ */
+public class CombinationDAOImpl implements CombinationCustom {
 }

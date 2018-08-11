@@ -1,4 +1,7 @@
 package org.foa.data.optiondata;
 
-public class OptionDAOImpl {
+/**
+ * @author 王川源
+ */
+public class OptionDAOImpl implements OptionCustom {
 }

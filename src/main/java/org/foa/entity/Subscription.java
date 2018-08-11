@@ -1,5 +1,9 @@
 package org.foa.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
 /**
@@ -7,6 +11,9 @@ import javax.persistence.*;
  * @author miaomuzhi
  * @since 2018/8/9
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Subscription {
 
@@ -20,35 +27,4 @@ public class Subscription {
     @Column(nullable = false)
     private String optionCode;
 
-    public Subscription() {}
-
-    public Subscription(long sid, String userId, String optionCode){
-        this.sid = sid;
-        this.userId = userId;
-        this.optionCode = optionCode;
-    }
-
-    public long getSid() {
-        return sid;
-    }
-
-    public void setSid(long sid) {
-        this.sid = sid;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public String getOptionCode() {
-        return optionCode;
-    }
-
-    public void setOptionCode(String optionCode) {
-        this.optionCode = optionCode;
-    }
 }
