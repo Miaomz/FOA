@@ -1,11 +1,10 @@
 package org.foa.entity;
 
-import javax.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 
 /**
  * @author miaomuzhi
@@ -22,6 +21,8 @@ public class User {
 
     @Column(nullable = false)
     private String password;
+
+    private String role;
 
     @Embedded
     private UserInfo userInfo;
