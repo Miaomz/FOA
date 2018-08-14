@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -240,12 +241,17 @@ public class HttpUtil {
             //get ids
             List<String> upOpts = getOptionsOfDate(OptionType.UP, toDateForm(availableMonth));
             List<String> downOpts = getOptionsOfDate(OptionType.DOWN, toDateForm(availableMonth));
+            //remove anomalies which generated for unknown reasons
+            upOpts.removeIf(upOpt -> !upOpt.contains("CON_OP_"));
+            downOpts.removeIf(downOpt -> !downOpt.contains("CON_OP_"));
 
             //get entities
             List<Option> upOptions = new ArrayList<>(upOpts.size());
             upOpts.forEach(upOpt -> upOptions.add(getOptionById(upOpt, OptionType.UP, availableMonth)));
+            upOptions.removeAll(Collections.singleton(null));
             List<Option> downOptions = new ArrayList<>(downOpts.size());
             downOpts.forEach(downOpt -> downOptions.add(getOptionById(downOpt, OptionType.DOWN, availableMonth)));
+            downOptions.removeAll(Collections.singleton(null));
             result.addAll(upOptions);
             result.addAll(downOptions);
         }
