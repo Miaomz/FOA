@@ -18,7 +18,7 @@ import javax.persistence.*;
 public class Subscription {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long sid;
 
     @Column(nullable = false)

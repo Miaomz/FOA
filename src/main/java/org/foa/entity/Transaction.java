@@ -19,8 +19,10 @@ import java.util.List;
 public class Transaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long tid;
+
+    private String userId;
 
     private LocalDateTime time;
 
@@ -28,5 +30,7 @@ public class Transaction {
     private List<Option> portfolio;
 
     private double profit;
+
+    private TransactionType transactionType = TransactionType.BUY;
 
 }

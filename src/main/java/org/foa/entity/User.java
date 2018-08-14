@@ -15,8 +15,8 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String userId;
 
     @Column(nullable = false)
