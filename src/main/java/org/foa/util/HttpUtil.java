@@ -2,12 +2,16 @@ package org.foa.util;
 
 import org.foa.entity.Option;
 import org.foa.entity.OptionType;
+import org.foa.entity.ValueState;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +24,7 @@ import java.util.List;
 public class HttpUtil {
 
     private static final String AVAILABLE_MONTHS = "http://stock.finance.sina.com.cn/futures/api/openapi.php/StockOptionService.getStockName";
-    private static final String REMAINDER_DAY = "http://stock.finance.sina.com.cn/futures/api/openapi.php/StockOptionService.getRemainderDay?date=201808";
+    private static final String REMAINDER_DAY = "http://stock.finance.sina.com.cn/futures/api/openapi.php/StockOptionService.getRemainderDay?date=";
     /**
      * suffix's form is CON_OP_[OptionCode]
      */
@@ -87,6 +91,8 @@ public class HttpUtil {
         return result;
     }
 
+
+
     /**
      * get option of specific type and due according to month
      * @param type up or down
@@ -110,13 +116,94 @@ public class HttpUtil {
     }
 
     /**
+     * 得到具体合约到期日
+     * @param dateForm 合约到期月，形如'2018-08'，如果对应日期为2018-08
+     * @return 到期日
+     */
+    public static LocalDate getRemainderDays(String dateForm){
+        String resp = getResponseWithoutBody(REMAINDER_DAY + dateForm);
+        if (resp == null) {
+            return null;
+        }
+
+        //remove useless part
+        resp = resp.substring(resp.indexOf("expireDay") + "expireDay\":\"".length());
+        resp = resp.substring(0, resp.indexOf('"'));
+        return LocalDate.parse(resp);
+    }
+
+
+    /**
      *
-     * @param optionCode 合约代码，形如'CON_OP_10001385'
+     * @param optionCode 合约代码，形如'CON_OP_10001385'（包含CON_OP_的前缀）
+     * @param optionType 期权类型，因为网络编码问题，必须在参数中传递
+     * @param dateForm 合约到期月，形如'2018-08'，如果对应日期为2018-08
      * @return 期权合约
      */
-    public static Option getOptionById(String optionCode){
+    public static Option getOptionById(String optionCode, OptionType optionType, String dateForm){
         String resp = getResponseWithoutBody(OPT_CON + optionCode);
-        return null;
+        String furtherData = getResponseWithoutBody(OPT_CON + optionCode.replace("OP", "SO"));
+        if (resp == null || furtherData == null){
+            return null;
+        }
+
+        //remove useless characters
+        resp = resp.substring(resp.indexOf('"') + 1);
+        resp = resp.substring(0, resp.indexOf('"'));
+
+        String[] numbers = resp.split(",");
+        Option option = new Option();
+        option.setOptionCode(optionCode);
+        option.setOptionType(optionType);
+
+        option.setBidVolume(Integer.valueOf(numbers[0]));//买量
+        option.setBidPrice(Double.valueOf(numbers[1]));//买价
+        option.setLatestPrice(Double.valueOf(numbers[2]));//最新价
+        option.setSellPrice(Double.valueOf(numbers[3]));//卖价
+        option.setSellVolume(Integer.valueOf(numbers[4]));//卖量
+        option.setPosition(Integer.valueOf(numbers[5]));//持仓量
+        option.setQuoteChange(Double.valueOf(numbers[6])/100);//涨跌幅，取值范围0~1.0
+        option.setExecPrice(Double.valueOf(numbers[7]));//行权价
+
+        //解决网路中文编码不明的问题
+        String abbr = numbers[37];
+        String monthStr = dateForm.split("-")[1];
+        if (monthStr.charAt(0) == '0'){
+            monthStr = monthStr.substring(1);
+        }
+        abbr = "50ETF" + (optionType == OptionType.UP ? "购" : "沽") + monthStr + "月" + abbr.substring(abbr.length()-4);
+        option.setOptionAbbr(abbr);
+
+        option.setAmplitude(Double.valueOf(numbers[38])/100);//振幅，取值范围0~1.0
+        option.setVolume(Integer.valueOf(numbers[41]));//成交量
+
+        //计算价值状态
+        ValueState state = ValueState.FLAT;
+        if (optionType == OptionType.UP && option.getLatestPrice() > option.getExecPrice()
+                || optionType == OptionType.DOWN && option.getLatestPrice() < option.getExecPrice()){
+            state = ValueState.REAL;
+        } else if (optionType == OptionType.UP && option.getLatestPrice() < option.getExecPrice()
+                || optionType == OptionType.DOWN && option.getLatestPrice() > option.getExecPrice()){
+            state = ValueState.VIRTUAL;
+        }
+        option.setValueState(state);
+
+        //进一步获得信息
+        furtherData = furtherData.substring(furtherData.indexOf('"') + 1);
+        furtherData = furtherData.substring(0, furtherData.indexOf('"'));
+        List<String> furtherNumbers = new ArrayList<>(Arrays.asList(furtherData.split(",")));
+        furtherNumbers.removeIf(furtherNumber -> furtherNumber == null ||furtherNumber.equals(""));
+        option.setGamma(Double.valueOf(furtherNumbers.get(3)));
+        option.setTheta(Double.valueOf(furtherNumbers.get(4)));
+        option.setVega(Double.valueOf(furtherNumbers.get(5)));
+        option.setInteriorRange(Double.valueOf(furtherNumbers.get(6)));
+
+        //计算日期
+        option.setExpireDay(getRemainderDays(dateForm));
+        int remainderDays = Period.between(LocalDate.now(), option.getExpireDay()).getDays();
+        option.setRemindedBusinessDays(remainderDays);
+        option.setRemindedNaturalDays(remainderDays);
+        return option;
     }
 
     public static String getResponseWithoutBody(String urlStr){
@@ -126,7 +213,7 @@ public class HttpUtil {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Connection", "Keep-Alive");
-            connection.setRequestProperty("Charset", "iso8859-1");
+            connection.setRequestProperty("Charset", "UTF-8");
             connection.setUseCaches(false);
             connection.setDoOutput(true);
 
@@ -146,8 +233,31 @@ public class HttpUtil {
         return resText;
     }
 
+    public static List<Option> recordAllOptions(){
+        List<Option> result = new ArrayList<>();
+        List<String> availableMonths = getAvailableMonths();
+        for (String availableMonth : availableMonths) {
+            //get ids
+            List<String> upOpts = getOptionsOfDate(OptionType.UP, toDateForm(availableMonth));
+            List<String> downOpts = getOptionsOfDate(OptionType.DOWN, toDateForm(availableMonth));
+
+            //get entities
+            List<Option> upOptions = new ArrayList<>(upOpts.size());
+            upOpts.forEach(upOpt -> upOptions.add(getOptionById(upOpt, OptionType.UP, availableMonth)));
+            List<Option> downOptions = new ArrayList<>(downOpts.size());
+            downOpts.forEach(downOpt -> downOptions.add(getOptionById(downOpt, OptionType.DOWN, availableMonth)));
+            result.addAll(upOptions);
+            result.addAll(downOptions);
+        }
+        return result;
+    }
+
     public static void main(String[] args) {
-        String resp = getResponseWithoutBody(OPT_CON + "CON_OP_10001385");
-        System.out.println(resp);
+        //to be determined
+        String path = "/Users/miaomuzhi/Downloads/opts/" + LocalDateTime.now().toString();
+        StringBuilder builder = new StringBuilder();
+        List<Option> options = recordAllOptions();
+        options.forEach(option -> builder.append(JsonUtil.toJson(option)).append(System.lineSeparator()));
+        FileUtil.writeFile(path, builder.toString());
     }
 }

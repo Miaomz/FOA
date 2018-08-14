@@ -98,7 +98,7 @@ public class Option {
     /**
      * 合约乘数，默认10000
      */
-    private double contractMultiplier;
+    private double contractMultiplier = 10000;
 
     /**
      * 剩余自然日
