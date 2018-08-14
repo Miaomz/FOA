@@ -237,6 +237,17 @@ public class HttpUtil {
     public static List<Option> recordAllOptions(){
         List<Option> result = new ArrayList<>();
         List<String> availableMonths = getAvailableMonths();
+        List<String> toBeRemoved = new ArrayList<>();
+        for (int i = 0; i < availableMonths.size()-1; i++) {
+            for (int j = i+1; j < availableMonths.size(); j++) {
+                if (availableMonths.get(i).equals(availableMonths.get(j))){
+                    toBeRemoved.add(availableMonths.get(i));
+                    break;
+                }
+            }
+        }
+        availableMonths.removeAll(toBeRemoved);
+
         for (String availableMonth : availableMonths) {
             //get ids
             List<String> upOpts = getOptionsOfDate(OptionType.UP, toDateForm(availableMonth));
@@ -252,6 +263,7 @@ public class HttpUtil {
             List<Option> downOptions = new ArrayList<>(downOpts.size());
             downOpts.forEach(downOpt -> downOptions.add(getOptionById(downOpt, OptionType.DOWN, availableMonth)));
             downOptions.removeAll(Collections.singleton(null));
+
             result.addAll(upOptions);
             result.addAll(downOptions);
         }
