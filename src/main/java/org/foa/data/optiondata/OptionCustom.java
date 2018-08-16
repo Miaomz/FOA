@@ -7,8 +7,8 @@ import org.foa.util.ResultMessage;
  */
 public interface OptionCustom {
 
-    ResultMessage addInterestedOption(String optionCode, String userId);
+    ResultMessage addInterestedOption(String optionAbbr, String userId);
 
-    ResultMessage deleteInterestedOption(String optionCode, String userId);
+    ResultMessage deleteInterestedOption(String optionAbbr, String userId);
 
 }

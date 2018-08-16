@@ -20,9 +20,20 @@ public class Combination {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cid;
 
+    /**
+     * 用户
+     */
+    private String userId;
+
+    /**
+     * 期权合约简称
+     */
     @Column(nullable = false)
     private String opt1;
 
+    /**
+     * 期权合约简称
+     */
     @Column(nullable = false)
     private String opt2;
 

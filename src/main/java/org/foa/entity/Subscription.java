@@ -25,6 +25,6 @@ public class Subscription {
     private String userId;
 
     @Column(nullable = false)
-    private String optionCode;
+    private String optionAbbr;
 
 }

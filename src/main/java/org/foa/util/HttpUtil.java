@@ -267,6 +267,11 @@ public class HttpUtil {
             result.addAll(upOptions);
             result.addAll(downOptions);
         }
+
+        //设置获取时间为同一时刻
+        LocalDateTime time = LocalDateTime.now();
+        result.forEach(option -> option.setTime(time));
+
         return result;
     }
 

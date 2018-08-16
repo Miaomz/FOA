@@ -3,10 +3,10 @@ package org.foa.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
 
-import javax.persistence.Entity;
+import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 注：所有百分比的取值均为0～1而非0～100
@@ -17,9 +17,16 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "Option_") //Option为MySQL关键字
 public class Option {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long oid;
+
+    /**
+     * 期权代码，新浪财经api中用于获取期权数据，与optionAbbr一一对应
+     */
     private String optionCode;
 
     /**
@@ -122,4 +129,9 @@ public class Option {
     private double gamma;
 
     private double theta;
+
+    /**
+     * 最新一次更新时间
+     */
+    private LocalDateTime time;
 }

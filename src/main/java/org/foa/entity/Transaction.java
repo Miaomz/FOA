@@ -26,8 +26,8 @@ public class Transaction {
 
     private LocalDateTime time;
 
-    @OneToMany
-    private List<Option> portfolio;
+    @ElementCollection
+    private List<String> portfolio;
 
     private double profit;
 
