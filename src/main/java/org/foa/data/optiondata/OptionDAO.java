@@ -21,6 +21,15 @@ public interface OptionDAO extends JpaRepository<Option, Long>, OptionCustom{
     Option findFirstByOptionAbbrOrderByTimeDesc(String optionAbbr);
 
     /**
+     * 得到当前可获得的期权合约
+     * 即数据库中存储的最近一次从新浪财经获取的期权合约信息
+     * @return
+     */
+    @Query("select opt from Option opt where opt.time in" +
+            "(select max(temp.time) from Option temp)")
+    List<Option> findCurrentOptions();
+
+    /**
      * 根据期权合约简称获得某个时间点之前的最新记录
      * @param optionAbbr 期权合约简称
      * @param time
