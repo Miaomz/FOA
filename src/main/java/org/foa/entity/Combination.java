@@ -60,4 +60,12 @@ public class Combination {
     @Embedded
     private Evaluation evaluation;
 
+    public Combination(String optUp1, String optDown1, String optUp2, String optDown2, Evaluation evaluation) {
+        this.optUp1 = optUp1;
+        this.optDown1 = optDown1;
+        this.optUp2 = optUp2;
+        this.optDown2 = optDown2;
+        this.evaluation = evaluation;
+    }
+
 }
