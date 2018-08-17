@@ -26,16 +26,28 @@ public class Combination {
     private String userId;
 
     /**
-     * 期权合约简称
+     * 看涨期权合约简称
      */
     @Column(nullable = false)
-    private String opt1;
+    private String optUp1;
 
     /**
-     * 期权合约简称
+     * 看跌期权合约简称
      */
     @Column(nullable = false)
-    private String opt2;
+    private String optDown1;
+
+    /**
+     * 看涨期权合约简称
+     */
+    @Column(nullable = false)
+    private String optUp2;
+
+    /**
+     * 看跌期权合约简称
+     */
+    @Column(nullable = false)
+    private String optDown2;
 
     /**
      * 暂时默认为1
