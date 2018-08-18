@@ -1,11 +1,9 @@
 package org.foa.util;
 
-import org.foa.data.optiondata.OptionDAO;
 import org.foa.entity.Combination;
 import org.foa.entity.Evaluation;
 import org.foa.entity.Option;
 import org.foa.entity.OptionType;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -22,9 +20,6 @@ import static java.util.stream.Collectors.*;
  */
 public class ArbitrageUtil {
 
-    @Autowired
-    private OptionDAO optionDAO;
-
     /**
      * 组合数
      */
@@ -35,7 +30,7 @@ public class ArbitrageUtil {
                 .collect(partitioningBy(entry -> entry.getKey() < n, mapping(AbstractMap.SimpleEntry::getValue, toList())));
     }
 
-    private <T> List<List<T>> combinations(List<T> list, int k) {
+    private static <T> List<List<T>> combinations(List<T> list, int k) {
         if (k == 0 || list.isEmpty()) {//去除K大于list.size的情况。即取出长度不足K时清除此list
             return Collections.emptyList();
         }
@@ -57,18 +52,14 @@ public class ArbitrageUtil {
     }
 
     /**
-     * 得到期权组合
+     * 得到期权组合，两个期权，4个合约
      */
-    private List<Option> getAvailableOptions() {
-        return optionDAO.findCurrentOptions();
-    }
-
-    private Map<LocalDate, List<Option>> classifyByExpireDay(List<Option> options) {
+    private static Map<LocalDate, List<Option>> classifyByExpireDay(List<Option> options) {
         Map<LocalDate, List<Option>> res = options.stream().collect(groupingBy(Option::getExpireDay));
         return res;
     }
 
-    private List<Combination> calculateEvaluation(List<Option> options) {
+    private static List<Combination> calculateEvaluation(List<Option> options) {
         List<Combination> res = new ArrayList<>();
         Map<Double, List<Option>> optsOfSameExecPrice = options.stream().collect(groupingBy(Option::getExecPrice));
         List<Double> execPrices = new ArrayList<>(optsOfSameExecPrice.keySet());
@@ -87,18 +78,18 @@ public class ArbitrageUtil {
                     ? optsOfSameExecPrice.get(c.get(1)).get(0) : optsOfSameExecPrice.get(c.get(1)).get(1);
 
             //todo
-            double gamma = 0;  //无风险利率
+            double gamma = 0.0415;  //无风险利率，用16国债19的到期收益率计算
             double tau = Period.between(optUp1.getExpireDay(), LocalDate.now()).getDays() / 360.0;
 
             double X1 = c.get(0);
             double X2 = c.get(1);
-            double C1 = optUp1.getSellPrice();
-            double P1 = optDown1.getSellPrice();
-            double C2 = optUp2.getSellPrice();
-            double P2 = optDown2.getSellPrice();
+            double C1 = optUp1.getLatestPrice();
+            double P1 = optDown1.getLatestPrice();
+            double C2 = optUp2.getLatestPrice();
+            double P2 = optDown2.getLatestPrice();
 
             double term1 = P1 - P2;
-            double term2 = (C1 - C2) + (X1 - X2) * Math.exp(gamma * tau);
+            double term2 = (C1 - C2) + (X1 - X2) * Math.exp((0 - gamma) * tau);
             Evaluation eva = new Evaluation(Math.abs(term1 - term2));
             Combination comb = new Combination(optUp1.getOptionAbbr(), optDown1.getOptionAbbr(), optUp2.getOptionAbbr(), optDown2.getOptionAbbr(), eva);
             res.add(comb);
@@ -106,5 +97,18 @@ public class ArbitrageUtil {
         return res;
     }
 
+    /**
+     *
+     * @param options 同一时刻可获得的同类型的期权如50ETF
+     * @return 本组期权可构成的全部组合
+     */
+    public static List<Combination> getOptCombination(List<Option> options) {
+        List<Combination> res = new ArrayList<>();
+        Map<LocalDate, List<Option>> optsOfSameExpireDay = classifyByExpireDay(options);
+        for (List<Option> opts : optsOfSameExpireDay.values()) {
+            res.addAll(calculateEvaluation(opts));
+        }
+        return res;
+    }
 
 }
