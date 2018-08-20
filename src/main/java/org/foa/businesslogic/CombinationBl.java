@@ -29,14 +29,22 @@ public class CombinationBl {
     @Autowired
     private OptionDAO optionDAO;
 
+    private Evaluation evaluate(Combination combination){
+        Option optUp1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp1());
+        Option optUp2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp2());
+        Option optDown1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown1());
+        Option optDown2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown2());
+        return ArbitrageUtil.calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
+    }
+
     @RequestMapping("/purchaseCombination")
     @Transactional
-    public ResultMessage purchaseCombination(@RequestParam String userId, @RequestParam String combinationJson) {
+    public void purchaseCombination(@RequestParam String userId, @RequestParam String combinationJson) {
         Combination combination = gson.fromJson(combinationJson, Combination.class);
         combination.setTime(LocalDateTime.now());
         combination.setUserId(userId);
+        combination.setEvaluation(evaluate(combination));
         combinationDAO.saveAndFlush(combination);
-        return ResultMessage.SUCCESS;
     }
 
     @RequestMapping("/getCurrentCombinations")
@@ -47,11 +55,7 @@ public class CombinationBl {
     @RequestMapping("/evaluateCombination")
     public Evaluation evaluateCombination(@RequestParam String combinationJson) {
         Combination combination = gson.fromJson(combinationJson, Combination.class);
-        Option optUp1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp1());
-        Option optUp2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp2());
-        Option optDown1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown1());
-        Option optDown2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown2());
-        return ArbitrageUtil.calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
+        return evaluate(combination);
     }
 
     @RequestMapping("/getRankedCombinations")
@@ -63,7 +67,8 @@ public class CombinationBl {
 
 
     /**
-     * 1. ResultMessage purchaseCombination(String userId, Combination combination);
+     * 1. void purchaseCombination(String userId, Combination combination);
+     * Combination需设置四个期权
      * 2. Combination getCurrentCombinations(String userId);
      * 3. Evaluation evaluateCombination(Combination combination);
      * 期权组合的盈利指标暂时仅有Term1-Term2的绝对值
@@ -75,16 +80,16 @@ public class CombinationBl {
      * Make singleton
      * Usage Instance: CombinationBl.combinationBl().functionName();
      */
-    private CombinationBl() {
-    }
-
-    ;
-    private CombinationBl combinationBl;
-
-    public CombinationBl combinationBl() {
-        if (combinationBl == null) {
-            combinationBl = new CombinationBl();
-        }
-        return combinationBl;
-    }
+//    private CombinationBl() {
+//    }
+//
+//    ;
+//    private CombinationBl combinationBl;
+//
+//    public CombinationBl combinationBl() {
+//        if (combinationBl == null) {
+//            combinationBl = new CombinationBl();
+//        }
+//        return combinationBl;
+//    }
 }

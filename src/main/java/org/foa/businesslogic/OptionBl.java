@@ -69,7 +69,7 @@ public class OptionBl {
      * 2. List<Option> getCategory(OptionType optionType)
      * 3. List<OptionItem> getRanking
      * 4. ResultMessage addInterestedOption(String optionAbbr, User user);//添加至期权池
-     * 5. ResultMessage deleteInterestedOption(String optionAbbr, User user);
+     * 5. ResultMessage deleteInterestedOption(String optionAbbr, User user);//从期权池中删除
      * 6. List<Option> findInterestedOptions(User user);
      * 7. List<User> findInterestingUsers(Option option);
      */
@@ -78,16 +78,16 @@ public class OptionBl {
      * Make singleton.
      * Usage Instance: OptionBl.optionBl().functionName();
      */
-    private OptionBl() {
-    }
-
-    ;
-    private OptionBl optionBl;
-
-    public OptionBl optionBl() {
-        if (optionBl == null) {
-            optionBl = new OptionBl();
-        }
-        return optionBl;
-    }
+//    private OptionBl() {
+//    }
+//
+//    ;
+//    private OptionBl optionBl;
+//
+//    public OptionBl optionBl() {
+//        if (optionBl == null) {
+//            optionBl = new OptionBl();
+//        }
+//        return optionBl;
+//    }
 }
