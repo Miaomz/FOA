@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 /**
  * @author miaomuzhi
@@ -53,6 +54,11 @@ public class Combination implements Comparable<Combination>{
      * 暂时默认为1
      */
     private int purchaseNum = 1;
+
+    /**
+     * 购入时间
+     */
+    private LocalDateTime time;
 
     /**
      * 暂时定为属性

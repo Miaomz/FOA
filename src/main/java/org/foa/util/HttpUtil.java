@@ -11,7 +11,6 @@ import java.net.URL;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.Period;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -201,7 +200,7 @@ public class HttpUtil {
 
         //计算日期
         option.setExpireDay(getRemainderDays(dateForm));
-        int remainderDays = Period.between(LocalDate.now(), option.getExpireDay()).getDays();
+        int remainderDays = (int)(option.getExpireDay().toEpochDay() - LocalDate.now().toEpochDay());
         option.setRemindedBusinessDays(remainderDays);
         option.setRemindedNaturalDays(remainderDays);
         return option;

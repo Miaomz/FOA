@@ -6,7 +6,6 @@ import org.foa.entity.Option;
 import org.foa.entity.OptionType;
 
 import java.time.LocalDate;
-import java.time.Period;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -86,7 +85,7 @@ public class ArbitrageUtil {
 
     public static Evaluation calculateEvaluation(Option optUp1, Option optDown1, Option optUp2, Option optDown2){
         double gamma = 0.0415;  //无风险利率，用16国债19的到期收益率计算
-        double tau = Period.between(optUp1.getExpireDay(), LocalDate.now()).getDays() / 360.0;
+        double tau = (optUp1.getExpireDay().toEpochDay() - LocalDate.now().toEpochDay()) / 360.0;
 
         double X1 = optUp1.getExecPrice();
         double X2 = optUp2.getExecPrice();

@@ -14,6 +14,6 @@ public interface CombinationDAO extends JpaRepository<Combination, Long>, Combin
      * 按盈利指标排序 即term1-term2的绝对值降序排列
      * @return
      */
-    List<Combination> findAllByOrderByEvaluationDifferenceDesc();
+    List<Combination> findByUserIdOrderByEvaluationDifferenceDesc(String userId);
     
 }
