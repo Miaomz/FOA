@@ -14,7 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Combination {
+public class Combination implements Comparable<Combination>{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,4 +68,12 @@ public class Combination {
         this.evaluation = evaluation;
     }
 
+    @Override
+    public int compareTo(Combination o) {
+        if (this.evaluation.getDifference() > o.evaluation.getDifference())
+            return 1;
+        else if (this.evaluation.getDifference() < o.evaluation.getDifference())
+            return -1;
+        else return 0;
+    }
 }

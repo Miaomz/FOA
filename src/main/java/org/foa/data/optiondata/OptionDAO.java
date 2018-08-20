@@ -1,6 +1,7 @@
 package org.foa.data.optiondata;
 
 import org.foa.entity.Option;
+import org.foa.entity.OptionType;
 import org.foa.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -51,6 +52,15 @@ public interface OptionDAO extends JpaRepository<Option, Long>, OptionCustom{
      * @return
      */
     List<Option> findByOptionAbbrAndTimeBefore(String optionAbbr, LocalDateTime time);
+
+    /**
+     * 返回当前可获得的某一类的所有期权，本应是返回大豆，50ETF... 由于数据问题，现在仅为返回看涨期权，看跌期权
+     * @param optionType
+     * @return
+     */
+    @Query("select opt from Option opt where opt.optionType = ?1 and opt.time in " +
+            "(select max(temp.time) from Option temp where temp.optionType = ?1)")
+    List<Option> findByOptionType(OptionType optionType);
 
     /**
      * 返回用户期权池内的所有期权

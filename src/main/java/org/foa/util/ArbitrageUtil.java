@@ -59,7 +59,7 @@ public class ArbitrageUtil {
         return res;
     }
 
-    private static List<Combination> calculateEvaluation(List<Option> options) {
+    private static List<Combination> getCombOfSameExpireDay(List<Option> options) {
         List<Combination> res = new ArrayList<>();
         Map<Double, List<Option>> optsOfSameExecPrice = options.stream().collect(groupingBy(Option::getExecPrice));
         List<Double> execPrices = new ArrayList<>(optsOfSameExecPrice.keySet());
@@ -77,24 +77,28 @@ public class ArbitrageUtil {
             Option optDown2 = optsOfSameExecPrice.get(c.get(1)).get(0).getOptionType() == OptionType.DOWN
                     ? optsOfSameExecPrice.get(c.get(1)).get(0) : optsOfSameExecPrice.get(c.get(1)).get(1);
 
-            //todo
-            double gamma = 0.0415;  //无风险利率，用16国债19的到期收益率计算
-            double tau = Period.between(optUp1.getExpireDay(), LocalDate.now()).getDays() / 360.0;
-
-            double X1 = c.get(0);
-            double X2 = c.get(1);
-            double C1 = optUp1.getLatestPrice();
-            double P1 = optDown1.getLatestPrice();
-            double C2 = optUp2.getLatestPrice();
-            double P2 = optDown2.getLatestPrice();
-
-            double term1 = P1 - P2;
-            double term2 = (C1 - C2) + (X1 - X2) * Math.exp((0 - gamma) * tau);
-            Evaluation eva = new Evaluation(Math.abs(term1 - term2));
+            Evaluation eva = calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
             Combination comb = new Combination(optUp1.getOptionAbbr(), optDown1.getOptionAbbr(), optUp2.getOptionAbbr(), optDown2.getOptionAbbr(), eva);
             res.add(comb);
         }
         return res;
+    }
+
+    public static Evaluation calculateEvaluation(Option optUp1, Option optDown1, Option optUp2, Option optDown2){
+        double gamma = 0.0415;  //无风险利率，用16国债19的到期收益率计算
+        double tau = Period.between(optUp1.getExpireDay(), LocalDate.now()).getDays() / 360.0;
+
+        double X1 = optUp1.getExecPrice();
+        double X2 = optUp2.getExecPrice();
+        double C1 = optUp1.getLatestPrice();
+        double P1 = optDown1.getLatestPrice();
+        double C2 = optUp2.getLatestPrice();
+        double P2 = optDown2.getLatestPrice();
+
+        double term1 = P1 - P2;
+        double term2 = (C1 - C2) + (X1 - X2) * Math.exp((0 - gamma) * tau);
+        Evaluation eva = new Evaluation(Math.abs(term1 - term2));
+        return eva;
     }
 
     /**
@@ -106,7 +110,7 @@ public class ArbitrageUtil {
         List<Combination> res = new ArrayList<>();
         Map<LocalDate, List<Option>> optsOfSameExpireDay = classifyByExpireDay(options);
         for (List<Option> opts : optsOfSameExpireDay.values()) {
-            res.addAll(calculateEvaluation(opts));
+            res.addAll(getCombOfSameExpireDay(opts));
         }
         return res;
     }

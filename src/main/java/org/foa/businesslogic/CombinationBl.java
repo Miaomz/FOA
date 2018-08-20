@@ -1,85 +1,58 @@
 package org.foa.businesslogic;
 
 import com.google.gson.Gson;
+import org.foa.data.combinationdata.CombinationDAO;
+import org.foa.data.optiondata.OptionDAO;
 import org.foa.entity.*;
+import org.foa.util.ArbitrageUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/CombinationBl")
 public class CombinationBl {
-    private Gson gson=new Gson();
 
+    private Gson gson = new Gson();
 
+    @Autowired
+    private CombinationDAO combinationDAO;
 
+    @Autowired
+    private OptionDAO optionDAO;
 
     @RequestMapping("/setCurrentCombination")
-    private String setCurrentCombination2(@RequestParam String userJson, @RequestParam String combinationJson){
-        User user=gson.fromJson(userJson,User.class);
-        Combination combination=gson.fromJson(combinationJson,Combination.class);
+    private String setCurrentCombination2(@RequestParam String userId, @RequestParam String combinationJson) {
+        Combination combination = gson.fromJson(combinationJson, Combination.class);
         //TODO
         return null;
     }
 
     @RequestMapping("/getCurrentCombination")
-    private Combination getCurrentCombination(@RequestParam String userJson ){
-        User user=gson.fromJson(userJson,User.class);
+    private Combination getCurrentCombination(@RequestParam String userId) {
         //TODO
         return null;
     }
 
-    @RequestMapping("/addInterestedOption")
-    private String addInterestedOption(@RequestParam String optionJson, @RequestParam String userJson){
-        User user=gson.fromJson(userJson,User.class);
-        Option option =gson.fromJson(optionJson, Option.class);
-        //TODO
-        return null;
-    }
-
-    @RequestMapping("/deleteInterestedOption")
-    private String deleteInterestedOption(@RequestParam String optionJson, @RequestParam String userJson){
-        User user=gson.fromJson(userJson,User.class);
-        Option option =gson.fromJson(optionJson, Option.class);
-        //TODO
-        return null;
-    }
-
-
-    @RequestMapping("/modifyInterestedOption")
-    private String modifyInterestedOption(@RequestParam String optionJson, @RequestParam String userJson){
-        User user=gson.fromJson(userJson,User.class);
-        Option option =gson.fromJson(optionJson, Option.class);
-        //TODO
-        return null;
-    }
-
-    @RequestMapping("/findInterestedOptions")
-    private ArrayList<Option> findInterestedOptions(@RequestParam String  userJson){
-        User user=gson.fromJson(userJson,User.class);
-        //TODO
-        return null;
-    }
-    @RequestMapping("/findInterestingUsers")
-    private ArrayList<User> findInterestingUsers(@RequestParam String optionJson){
-        Option option =gson.fromJson(optionJson, Option.class);
-        //TODO
-        return null;
-    }
     @RequestMapping("/evaluateCombination")
-    private Evaluation evaluateCombination(@RequestParam String combinationJson){
-        Combination combination=gson.fromJson(combinationJson,Combination.class);
-        //TODO
-        return null;
+    private Evaluation evaluateCombination(@RequestParam String combinationJson) {
+        Combination combination = gson.fromJson(combinationJson, Combination.class);
+        Option optUp1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp1());
+        Option optUp2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp2());
+        Option optDown1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown1());
+        Option optDown2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown2());
+        return ArbitrageUtil.calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
     }
 
     @RequestMapping("/getRankedCombinations")
-    ArrayList<Combination> getRankedCombinations(@RequestParam String termsJson){
-        ArrayList<OptionItem> terms=gson.fromJson(termsJson,ArrayList.class);
-        //TODO
-        return null;
+    private List<Combination> getRankedCombinations() {
+        List<Option> options = optionDAO.findCurrentOptions();
+        List<Combination> combinations = ArbitrageUtil.getOptCombination(options);
+        return combinations.stream().sorted().collect(Collectors.toList());
     }
 
 
@@ -100,16 +73,19 @@ public class CombinationBl {
      */
 
 
-
     /**
      * Make singleton
      * Usage Instance: CombinationBl.combinationBl().functionName();
      */
-    private CombinationBl(){};
+    private CombinationBl() {
+    }
+
+    ;
     private CombinationBl combinationBl;
-    public CombinationBl combinationBl(){
-        if (combinationBl==null){
-            combinationBl=new CombinationBl();
+
+    public CombinationBl combinationBl() {
+        if (combinationBl == null) {
+            combinationBl = new CombinationBl();
         }
         return combinationBl;
     }
