@@ -48,8 +48,8 @@ public class UserBl {
      * Usage Instance: UserBl.userBl().functionName();
      */
     private UserBl(){};
-    private UserBl userBl;
-    public UserBl userBl(){
+    private static UserBl userBl;
+    public static UserBl userBl(){
         if (userBl==null){
             userBl=new UserBl();
         }

@@ -82,8 +82,8 @@ public class TransactionBl {
      * Usage Instance: TransactionBl.transactionBl().functionName();
      */
     private TransactionBl(){};
-    private TransactionBl transactionBl;
-    public TransactionBl transactionBl(){
+    private static TransactionBl transactionBl;
+    public static TransactionBl transactionBl(){
         if (transactionBl==null){
             transactionBl=new TransactionBl();
         }
