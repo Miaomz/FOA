@@ -3,6 +3,8 @@ package org.foa.data.optiondata;
 import org.foa.FoaApp;
 import org.foa.entity.Option;
 import org.foa.util.ResultMessage;
+import org.foa.util.SortDTO;
+import org.foa.util.SortUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import javax.transaction.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -58,6 +61,24 @@ public class OptionDAOImplTest {
         opt3.setOptionAbbr("50ETF沽2200");
         optionDAO.saveAndFlush(opt3);
         assertEquals(2, optionDAO.findCurrentOptions().size());
+    }
+
+    @Test
+    @Rollback
+    public void findCurrentOptionsWithSort(){
+        LocalDateTime time = LocalDateTime.now();
+        Option opt1 = new Option();
+        opt1.setTime(time);
+        opt1.setOptionAbbr("50ETF购2200");
+        opt1.setBidPrice(20);
+        optionDAO.saveAndFlush(opt1);
+        Option opt2 = new Option();
+        opt2.setTime(time);
+        opt2.setOptionAbbr("50ETF购2200");
+        opt2.setBidPrice(30);
+        optionDAO.saveAndFlush(opt2);
+        List<Option> res = optionDAO.findCurrentOptions(SortUtil.sortBy(new SortDTO("bidPrice")));
+        assertEquals(30, res.get(0).getBidPrice(), 0);
     }
 
     @Test

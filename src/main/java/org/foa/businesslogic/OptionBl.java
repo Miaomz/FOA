@@ -53,9 +53,17 @@ public class OptionBl {
         return optionDAO.findByOptionType(optionType);
     }
 
+    /**
+     * 据说是合约的排行榜，我也没弄清楚
+     * @param dayNum 统计天数
+     * @param upperLimit 涨跌幅上限
+     * @param lowerLimit 涨跌幅下限
+     * @param sortType 排序依据，热度（成交量)volume，涨跌幅绝对值quoteChange 还有一个套利可能性不知道怎么判断
+     * @return OptionItem 包括排名ranking，期权合约Option
+     */
     @RequestMapping("/getRanking")
     public List<OptionItem> getRanking(@RequestParam int dayNum, @RequestParam float upperLimit, @RequestParam float lowerLimit, @RequestParam String sortType) {
-        //TODO
+
         return null;
     }
 

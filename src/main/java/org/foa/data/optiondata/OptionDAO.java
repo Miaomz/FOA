@@ -3,6 +3,7 @@ package org.foa.data.optiondata;
 import org.foa.entity.Option;
 import org.foa.entity.OptionType;
 import org.foa.entity.User;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -29,6 +30,11 @@ public interface OptionDAO extends JpaRepository<Option, Long>, OptionCustom{
     @Query("select opt from Option opt where opt.time in" +
             "(select max(temp.time) from Option temp)")
     List<Option> findCurrentOptions();
+
+
+    @Query("select opt from Option opt where opt.time in" +
+            "(select max(temp.time) from Option temp) order by ?#{#sort}")
+    List<Option> findCurrentOptions(Sort sort);
 
     /**
      * 根据期权合约简称获得某个时间点之前的最新记录
