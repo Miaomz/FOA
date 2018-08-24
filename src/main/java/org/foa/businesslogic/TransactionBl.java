@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import org.foa.data.transactiondata.TransactionDAO;
 import org.foa.entity.Transaction;
 import org.foa.util.ResultMessage;
+import org.foa.util.SortDTO;
+import org.foa.util.SortUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,20 +88,10 @@ public class TransactionBl {
     }
 
     @RequestMapping("/findTransactionsByTerm")
+    @SuppressWarnings("unchecked")
     public List<Transaction> findTransactionsByTerm(@RequestParam String termsJson){
-//        ArrayList<OptionItem> terms = gson.fromJson(termsJson, ArrayList.class);
-//        List<Transaction> allTransactions = findAllTransactions();
-//        List<Transaction> targetTransactions = new ArrayList<>();
-//        allTransactions.forEach(transaction -> {
-//            for (String s : transaction.getPortfolio()) {
-//                for (OptionItem term : terms) {
-//                    if (s.equals(term.getOption().getOptionAbbr())){
-//
-//                    }
-//                }
-//            }
-//                });
-        return null;
+        List<SortDTO> sortDTOS = gson.fromJson(termsJson, List.class);
+        return transactionDAO.findAll(SortUtil.sortBy(sortDTOS.toArray(new SortDTO[0])));
     }
 }
 

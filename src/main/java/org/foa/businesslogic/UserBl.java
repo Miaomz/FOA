@@ -77,8 +77,14 @@ public class UserBl {
 
 
     @RequestMapping("/updateUserInfo")
-    private ResultMessage updateUserInfo (@RequestParam UserInfo userInfo){
-        //TODO
-        return null;
+    private ResultMessage updateUserInfo (@RequestParam UserInfo userInfo, @RequestParam String username){
+        try {
+            User user = userDAO.getOne(username);
+            user.setUserInfo(userInfo);
+            userDAO.saveAndFlush(user);
+        } catch (DataAccessException |PersistenceException e){
+            return ResultMessage.FAILURE;
+        }
+        return ResultMessage.SUCCESS;
     }
 }

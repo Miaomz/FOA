@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface TransactionDAO extends JpaRepository<Transaction, Long>, TransactionCustom {
 
-    /**
+    /*
      * 需要排序的返回所有交易
      * findAll(SortUtil.sortBy(SortDTO... dtos))
      *
@@ -34,7 +34,7 @@ public interface TransactionDAO extends JpaRepository<Transaction, Long>, Transa
      * findAll(SortUtil.sortBy(new SortDTO("desc", "time"), new SortDTO("desc", "profit")))
      */
 
-    /**
+    /*
      * 下面是三个简易的排序返回接口
      */
 
