@@ -7,13 +7,17 @@ import org.foa.entity.OptionItem;
 import org.foa.entity.OptionType;
 import org.foa.entity.User;
 import org.foa.util.ResultMessage;
+import org.foa.util.SortDTO;
+import org.foa.util.SortUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/OptionBl")
@@ -54,8 +58,8 @@ public class OptionBl {
     }
 
     /**
-     * 据说是合约的排行榜，我也没弄清楚
-     * @param dayNum 统计天数
+     * 合约的排行榜
+     * @param dayNum 统计天数 这个天数有点疑问，谁要的这个接口到时再讨论
      * @param upperLimit 涨跌幅上限
      * @param lowerLimit 涨跌幅下限
      * @param sortType 排序依据，热度（成交量)volume，涨跌幅绝对值quoteChange 还有一个套利可能性不知道怎么判断
@@ -63,8 +67,14 @@ public class OptionBl {
      */
     @RequestMapping("/getRanking")
     public List<OptionItem> getRanking(@RequestParam int dayNum, @RequestParam float upperLimit, @RequestParam float lowerLimit, @RequestParam String sortType) {
-
-        return null;
+        List<Option> optsSorted = optionDAO.findCurrentOptions(SortUtil.sortBy(new SortDTO(sortType))); //排序
+        List<Option> optsAfterFilter = optsSorted.stream().filter(option -> option.getQuoteChange() >= lowerLimit && option.getQuoteChange() <= upperLimit).collect(Collectors.toList()); //筛选
+        List<OptionItem> res = new ArrayList<>();
+        long rank = 0;
+        for (Option opt : optsAfterFilter){
+            res.add(new OptionItem(rank++, opt));
+        }
+        return res;
     }
 
     /**
