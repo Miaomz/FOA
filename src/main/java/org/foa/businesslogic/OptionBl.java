@@ -73,21 +73,4 @@ public class OptionBl {
      * 6. List<Option> findInterestedOptions(User user);
      * 7. List<User> findInterestingUsers(Option option);
      */
-
-    /**
-     * Make singleton.
-     * Usage Instance: OptionBl.optionBl().functionName();
-     */
-//    private OptionBl() {
-//    }
-//
-//    ;
-//    private OptionBl optionBl;
-//
-//    public OptionBl optionBl() {
-//        if (optionBl == null) {
-//            optionBl = new OptionBl();
-//        }
-//        return optionBl;
-//    }
 }

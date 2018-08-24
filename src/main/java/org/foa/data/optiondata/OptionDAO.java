@@ -68,7 +68,7 @@ public interface OptionDAO extends JpaRepository<Option, Long>, OptionCustom{
      * @param userId 用户账号
      * @return
      */
-    @Query(value = "SELECT o1.* FROM Option_ o1, (SELECT optionAbbr, MAX('time') as lastUpdateTime FROM Option_ GROUP BY optionAbbr) o2 WHERE " +
+    @Query(value = "SELECT o1.* FROM Option_ o1, (SELECT optionAbbr, MAX(time) as lastUpdateTime FROM Option_ GROUP BY optionAbbr) o2 WHERE " +
             "o1.optionAbbr = o2.optionAbbr AND o1.time = o2.lastUpdateTime AND o1.optionAbbr IN " +
             "(SELECT optionAbbr FROM Subscription WHERE userId = ?1)", nativeQuery = true)
     List<Option> findInterestedOptions(String userId);

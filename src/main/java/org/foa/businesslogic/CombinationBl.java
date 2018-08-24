@@ -29,7 +29,7 @@ public class CombinationBl {
     @Autowired
     private OptionDAO optionDAO;
 
-    private Evaluation evaluate(Combination combination){
+    private Evaluation evaluate(Combination combination) {
         Option optUp1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp1());
         Option optUp2 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp2());
         Option optDown1 = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptDown1());
@@ -39,12 +39,13 @@ public class CombinationBl {
 
     @RequestMapping("/purchaseCombination")
     @Transactional
-    public void purchaseCombination(@RequestParam String userId, @RequestParam String combinationJson) {
+    public ResultMessage purchaseCombination(@RequestParam String userId, @RequestParam String combinationJson) {
         Combination combination = gson.fromJson(combinationJson, Combination.class);
         combination.setTime(LocalDateTime.now());
         combination.setUserId(userId);
         combination.setEvaluation(evaluate(combination));
-        combinationDAO.saveAndFlush(combination);
+        Combination entity = combinationDAO.saveAndFlush(combination);
+        return entity.getCid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS; //自增主键id从1开始，若为0则为默认值失败
     }
 
     @RequestMapping("/getCurrentCombinations")
@@ -74,22 +75,4 @@ public class CombinationBl {
      * 期权组合的盈利指标暂时仅有Term1-Term2的绝对值
      * 4. List<Combination> getRankedCombinations(); 得到现在所有的期权组合
      */
-
-
-    /**
-     * Make singleton
-     * Usage Instance: CombinationBl.combinationBl().functionName();
-     */
-//    private CombinationBl() {
-//    }
-//
-//    ;
-//    private CombinationBl combinationBl;
-//
-//    public CombinationBl combinationBl() {
-//        if (combinationBl == null) {
-//            combinationBl = new CombinationBl();
-//        }
-//        return combinationBl;
-//    }
 }
