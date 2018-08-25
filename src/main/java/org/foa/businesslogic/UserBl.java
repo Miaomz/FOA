@@ -80,12 +80,12 @@ public class UserBl {
      */
     @RequestMapping("/modifyPassword")
     private ResultMessage modifyPassword(@RequestParam String username ,@RequestParam String originalPassword, @RequestParam String newPassword){
-        String truePassword = userDAO.getOne(username).getPassword();
-        if (truePassword == null || !truePassword.equals(MD5Encrypt.MD5(originalPassword))){
-            return ResultMessage.FAILURE;
-        }
-
         try {
+            String truePassword = userDAO.getOne(username).getPassword();
+            if (truePassword == null || !truePassword.equals(MD5Encrypt.MD5(originalPassword))){
+                return ResultMessage.FAILURE;
+            }
+
             User user = userDAO.getOne(username);
             user.setPassword(MD5Encrypt.MD5(newPassword));
             userDAO.saveAndFlush(user);
@@ -102,7 +102,11 @@ public class UserBl {
      */
     @RequestMapping("/getUserInfo")
     private UserInfo getUserInfo(@RequestParam String username){
-        return userDAO.getOne(username).getUserInfo();
+        try {
+            return userDAO.getOne(username).getUserInfo();
+        } catch (PersistenceException e){
+            return null;
+        }
     }
 
     /**

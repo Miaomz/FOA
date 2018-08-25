@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.PersistenceException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -100,7 +101,11 @@ public class TransactionBl {
      */
     @RequestMapping("/findTransactionById")
     public Transaction findTransactionById(@RequestParam long tid){
-        return transactionDAO.getOne(tid);
+        try {
+            return transactionDAO.getOne(tid);
+        } catch (DataAccessException|PersistenceException e){
+            return null;
+        }
     }
 
     /**
@@ -109,7 +114,11 @@ public class TransactionBl {
      */
     @RequestMapping("/findAllTransactions")
     public List<Transaction> findAllTransactions(){
-        return transactionDAO.findAll();
+        try {
+            return transactionDAO.findAll();
+        } catch (PersistenceException e){
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -121,8 +130,12 @@ public class TransactionBl {
     @RequestMapping("/findTransactionsByTerm")
     @SuppressWarnings("unchecked")
     public List<Transaction> findTransactionsByTerm(@RequestParam String termsJson){
-        List<SortDTO> sortDTOS = gson.fromJson(termsJson, List.class);
-        return transactionDAO.findAll(SortUtil.sortBy(sortDTOS.toArray(new SortDTO[0])));
+        try {
+            List<SortDTO> sortDTOS = gson.fromJson(termsJson, List.class);
+            return transactionDAO.findAll(SortUtil.sortBy(sortDTOS.toArray(new SortDTO[0])));
+        } catch (DataAccessException|PersistenceException e){
+            return new ArrayList<>();
+        }
     }
 }
 
