@@ -23,6 +23,12 @@ public class UserBl {
     @Autowired
     private UserDAO userDAO;
 
+    /**
+     *
+     * @param username id and name of user
+     * @param password password that user inputs
+     * @return resultMessage
+     */
     @RequestMapping("/login")
     private ResultMessage login(@RequestParam String username, @RequestParam String password) {
         User targetUser = userDAO.getOne(username);
@@ -38,6 +44,13 @@ public class UserBl {
         }
     }
 
+    /**
+     *
+     * @param username id and name of user
+     * @param firstPassword first password that user inputs
+     * @param repetitiousPassword second time to confirm
+     * @return resultMessage
+     */
     @RequestMapping("/signUp")
     private ResultMessage signUp(@RequestParam String username ,@RequestParam String firstPassword, @RequestParam String repetitiousPassword){
         if (firstPassword == null || !firstPassword.equals(repetitiousPassword)){
@@ -53,6 +66,13 @@ public class UserBl {
         return ResultMessage.SUCCESS;
     }
 
+    /**
+     *
+     * @param username name and id
+     * @param originalPassword old password that user inputs
+     * @param newPassword new password that user wants to use
+     * @return resultMessage
+     */
     @RequestMapping("/modifyPassword")
     private ResultMessage modifyPassword(@RequestParam String username ,@RequestParam String originalPassword, @RequestParam String newPassword){
         String truePassword = userDAO.getOne(username).getPassword();
@@ -70,12 +90,22 @@ public class UserBl {
         return ResultMessage.SUCCESS;
     }
 
+    /**
+     *
+     * @param username id and name of user
+     * @return the details of User
+     */
     @RequestMapping("/getUserInfo")
     private UserInfo getUserInfo(@RequestParam String username){
         return userDAO.getOne(username).getUserInfo();
     }
 
-
+    /**
+     *
+     * @param userInfo edited user information
+     * @param username id and name
+     * @return resultMessage
+     */
     @RequestMapping("/updateUserInfo")
     private ResultMessage updateUserInfo (@RequestParam UserInfo userInfo, @RequestParam String username){
         try {

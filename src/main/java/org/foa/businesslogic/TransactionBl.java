@@ -25,7 +25,7 @@ public class TransactionBl {
     private TransactionDAO transactionDAO;
     /**
      * 1. ResultMessage addTransaction(Transaction t);
-     * 2. ResultMessage deleteTransaction(long tid);
+     * 2. ResultMessage deleteTransaction(Transaction t);
      * 3. ResultMessage modifyTransaction(Transaction t);
      * 4. Transaction findTransactionById(long tid);
      * 5. List<Transaction> findAllTransactions(); //默认按照时间倒序排序
@@ -42,6 +42,11 @@ public class TransactionBl {
      * }
      */
 
+    /**
+     * addTransaction
+     * @param transactionJson json of entity Transaction
+     * @return resultMessage, SUCCESS or FAILURE
+     */
     @RequestMapping("/addTransaction")
     @Transactional
     public ResultMessage addTransaction(@RequestParam String transactionJson){
@@ -54,6 +59,11 @@ public class TransactionBl {
         return ResultMessage.SUCCESS;
     }
 
+    /**
+     * delete
+     * @param transactionJson json of entity transaction
+     * @return resultMessage
+     */
     @RequestMapping("/deleteTransaction")
     @Transactional
     public ResultMessage deleteTransaction(@RequestParam String transactionJson){
@@ -66,6 +76,11 @@ public class TransactionBl {
         return ResultMessage.SUCCESS;
     }
 
+    /**
+     * modify
+     * @param transactionJson json of entity transaction
+     * @return resultMessage
+     */
     @RequestMapping("/modifyTransaction")
     @Transactional
     public ResultMessage modifyTransaction(@RequestParam String transactionJson){
@@ -77,16 +92,32 @@ public class TransactionBl {
         }
         return ResultMessage.SUCCESS;
     }
+
+    /**
+     *
+     * @param tid id of transaction
+     * @return json of transaction
+     */
     @RequestMapping("/findTransactionById")
     public Transaction findTransactionById(@RequestParam long tid){
         return transactionDAO.getOne(tid);
     }
 
+    /**
+     *
+     * @return all transactions
+     */
     @RequestMapping("/findAllTransactions")
     public List<Transaction> findAllTransactions(){
         return transactionDAO.findAll();
     }
 
+    /**
+     *
+     * @param termsJson json of SortDTOs' list
+     * @return transaction arranged according to the sortDTOs
+     * org.foa.util.SortDTO
+     */
     @RequestMapping("/findTransactionsByTerm")
     @SuppressWarnings("unchecked")
     public List<Transaction> findTransactionsByTerm(@RequestParam String termsJson){
