@@ -31,15 +31,20 @@ public class UserBl {
      */
     @RequestMapping("/login")
     private ResultMessage login(@RequestParam String username, @RequestParam String password) {
-        User targetUser = userDAO.getOne(username);
-        if (targetUser.getUserId() == null){//it seems that the return value of JpaRepository will never be null
-            return ResultMessage.INEXISTENCE;
-        }
+        try {
+            User targetUser = userDAO.getOne(username);
 
-        String truePassword = targetUser.getPassword();
-        if (MD5Encrypt.MD5(password).equals(truePassword)){
-            return ResultMessage.SUCCESS;
-        } else {
+            if (targetUser.getUserId() == null){//it seems that the return value of JpaRepository will never be null
+                return ResultMessage.INEXISTENCE;
+            }
+
+            String truePassword = targetUser.getPassword();
+            if (MD5Encrypt.MD5(password).equals(truePassword)){
+                return ResultMessage.SUCCESS;
+            } else {
+                return ResultMessage.FAILURE;
+            }
+        } catch (PersistenceException e){
             return ResultMessage.FAILURE;
         }
     }
