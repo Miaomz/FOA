@@ -9,6 +9,7 @@ import org.foa.entity.User;
 import org.foa.util.ResultMessage;
 import org.foa.util.SortDTO;
 import org.foa.util.SortUtil;
+import org.foa.vo.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -27,6 +29,94 @@ public class OptionBl {
 
     @Autowired
     private OptionDAO optionDAO;
+
+    /**
+     * 获取这一时刻可以获取的所有期权的信息
+     * 并组合为同一个行权价的标的物的两个合约的集合
+     * @return
+     */
+    @RequestMapping("/getTargets")
+    public List<Target> getTargets() {
+        List<Target> targets = new ArrayList<>();
+        List<Option> options = optionDAO.findCurrentOptions();
+        Map<Double, List<Option>> combs = options.stream().collect(Collectors.groupingBy(Option::getExecPrice));
+        for(List<Option> opts : combs.values()){
+            assert opts.size() == 2 : "有多个标的物行权价相同";
+            Option optUp = opts.get(0).getOptionType() == OptionType.UP ? opts.get(0) : opts.get(1);
+            Option optDown = opts.get(0).getOptionType() == OptionType.DOWN ? opts.get(0) : opts.get(1);
+            targets.add(new Target(optUp, optDown));
+        }
+        return targets;
+    }
+
+    /**
+     * 得到同一个行权价的标的物的两个合约
+     * @param tid
+     * 代表两个合约的共同简称
+     * 如50ETF购9月2200，50ETF沽9月2200 则为50ETF9月2200 方便数据层查找
+     * @return
+     */
+    @RequestMapping("/getTarget")
+    public Target getTarget(@RequestParam String tid){
+        assert tid.contains("50ETF") : "非50ETF";
+        String prefix = "50ETF";
+        String suffix = tid.substring(5);
+        Option optUp = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(prefix + "购" + suffix);
+        Option optDown = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(prefix + "沽" + suffix);
+        return new Target(optUp, optDown);
+    }
+
+    /**
+     * 将该标的物的两个期权合约加入期权池
+     * @param tid
+     * @param userId
+     * @return
+     */
+    @RequestMapping("/addInterestedTarget")
+    public ResultMessage addInterestedTarget(@RequestParam String tid, @RequestParam String userId){
+        assert tid.contains("50ETF") : "非50ETF";
+        String prefix = "50ETF";
+        String suffix = tid.substring(5);
+        ResultMessage message1 = optionDAO.addInterestedOption(prefix + "购" + suffix, userId);
+        ResultMessage message2 = optionDAO.addInterestedOption(prefix + "沽" + suffix, userId);
+        return message1 == ResultMessage.SUCCESS && message2 == ResultMessage.SUCCESS ? ResultMessage.SUCCESS : ResultMessage.FAILURE;
+    }
+
+    /**
+     * 从用户期权池内删除改标的物的两个期权合约
+     * @param tid
+     * @param userId
+     * @return
+     */
+    @RequestMapping("/deleteInterestedTarget")
+    public ResultMessage deleteInterestedTarget(@RequestParam String tid, @RequestParam String userId){
+        assert tid.contains("50ETF") : "非50ETF";
+        String prefix = "50ETF";
+        String suffix = tid.substring(5);
+        ResultMessage message1 = optionDAO.deleteInterestedOption(prefix + "购" + suffix, userId);
+        ResultMessage message2 = optionDAO.deleteInterestedOption(prefix + "沽" + suffix, userId);
+        return message1 == ResultMessage.SUCCESS && message2 == ResultMessage.SUCCESS ? ResultMessage.SUCCESS : ResultMessage.FAILURE;
+    }
+
+    /**
+     * 得到用户期权池内同一标的物的两个期权的组合的集合
+     * @param userId
+     * @return
+     */
+    @RequestMapping("/findInterestedTargets")
+    public List<Target> findInterestedTargets(@RequestParam String userId){
+        List<Target> targets = new ArrayList<>();
+        List<Option> options = optionDAO.findInterestedOptions(userId);
+        Map<Double, List<Option>> combs = options.stream().collect(Collectors.groupingBy(Option::getExecPrice));
+        for(List<Option> opts : combs.values()){
+            if(opts.size() == 2){
+                Option optUp = opts.get(0).getOptionType() == OptionType.UP ? opts.get(0) : opts.get(1);
+                Option optDown = opts.get(0).getOptionType() == OptionType.DOWN ? opts.get(0) : opts.get(1);
+                targets.add(new Target(optUp, optDown));
+            }
+        }
+        return targets;
+    }
 
     /**
      * 获取这一时刻可以获取的所有期权的信息
