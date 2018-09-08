@@ -124,6 +124,22 @@ public class TransactionBl {
 
     /**
      *
+     * @param userId 用户名
+     * @return 该用户的交易记录
+     */
+    @RequestMapping("/findTransactionByUser")
+    public List<Transaction> findTransactionsByUser(@RequestParam String userId){
+        try {
+            List<Transaction> transactions = transactionDAO.findAll();
+            transactions.removeIf(transaction -> !transaction.getUserId().equals(userId));
+            return transactions;
+        } catch (PersistenceException e){
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     *
      * @param termsJson json of SortDTOs' list
      * @return transaction arranged according to the sortDTOs
      * org.foa.util.SortDTO
