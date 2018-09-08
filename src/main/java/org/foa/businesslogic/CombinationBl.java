@@ -96,10 +96,8 @@ public class CombinationBl {
     @RequestMapping("/getRankedCombinations")
     public List<CombinationVO> getRankedCombinations() {
         List<Option> options = optionDAO.findCurrentOptions();
-        List<Combination> combinations = ArbitrageUtil.getOptCombination(options).stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
-        List<CombinationVO> res = new ArrayList<>();
-        combinations.forEach(combination -> res.add(trans(combination)));
-        return res;
+        List<CombinationVO> combinations = ArbitrageUtil.getOptCombination(options).stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        return combinations;
     }
 
     /**

@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CombinationVO {
+public class CombinationVO implements Comparable<CombinationVO>{
 
     private long cid;
 
@@ -25,14 +25,37 @@ public class CombinationVO {
 
     private Option optDown2;
 
-    private int purchaseNum;
+    private int purchaseNum = 1;
 
     private LocalDateTime time;
+
+    /**
+     * 价差
+     */
+    private double difference;
+
+    public CombinationVO(Option optUp1, Option optDown1, Option optUp2, Option optDown2, double difference){
+        this.optUp1 = optUp1;
+        this.optDown1 = optDown1;
+        this.optUp2 = optUp2;
+        this.optDown2 = optDown2;
+        this.difference = difference;
+    }
 
     public CombinationVO(Combination combination){
         this.cid = combination.getCid();
         this.userId = combination.getUserId();
         this.purchaseNum = combination.getPurchaseNum();
         this.time = combination.getTime();
+        this.difference = combination.getEvaluation().getDifference();
+    }
+
+    @Override
+    public int compareTo(CombinationVO o) {
+        if (this.getDifference() > o.getDifference())
+            return 1;
+        else if (this.getDifference() < o.getDifference())
+            return -1;
+        else return 0;
     }
 }

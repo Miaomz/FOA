@@ -1,9 +1,9 @@
 package org.foa.util;
 
-import org.foa.entity.Combination;
 import org.foa.entity.Evaluation;
 import org.foa.entity.Option;
 import org.foa.entity.OptionType;
+import org.foa.vo.CombinationVO;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -58,8 +58,8 @@ public class ArbitrageUtil {
         return res;
     }
 
-    private static List<Combination> getCombOfSameExpireDay(List<Option> options) {
-        List<Combination> res = new ArrayList<>();
+    private static List<CombinationVO> getCombOfSameExpireDay(List<Option> options) {
+        List<CombinationVO> res = new ArrayList<>();
         Map<Double, List<Option>> optsOfSameExecPrice = options.stream().collect(groupingBy(Option::getExecPrice));
         List<Double> execPrices = new ArrayList<>(optsOfSameExecPrice.keySet());
         List<List<Double>> combinations = combinations(execPrices, 2);
@@ -77,7 +77,7 @@ public class ArbitrageUtil {
                     ? optsOfSameExecPrice.get(c.get(1)).get(0) : optsOfSameExecPrice.get(c.get(1)).get(1);
 
             Evaluation eva = calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
-            Combination comb = new Combination(optUp1.getOptionAbbr(), optDown1.getOptionAbbr(), optUp2.getOptionAbbr(), optDown2.getOptionAbbr(), eva);
+            CombinationVO comb = new CombinationVO(optUp1, optDown1, optUp2, optDown2, eva.getDifference());
             res.add(comb);
         }
         return res;
@@ -105,8 +105,8 @@ public class ArbitrageUtil {
      * @param options 同一时刻可获得的同类型的期权如50ETF
      * @return 本组期权可构成的全部组合
      */
-    public static List<Combination> getOptCombination(List<Option> options) {
-        List<Combination> res = new ArrayList<>();
+    public static List<CombinationVO> getOptCombination(List<Option> options) {
+        List<CombinationVO> res = new ArrayList<>();
         Map<LocalDate, List<Option>> optsOfSameExpireDay = classifyByExpireDay(options);
         for (List<Option> opts : optsOfSameExpireDay.values()) {
             res.addAll(getCombOfSameExpireDay(opts));
