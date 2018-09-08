@@ -14,11 +14,11 @@ public interface TransactionDAO extends JpaRepository<Transaction, Long>, Transa
      * 需要排序的返回所有交易
      * findAll(SortUtil.sortBy(SortDTO... dtos))
      *
-     * dto = new SortDTO(String orderType, String orderField)
-     * orderType desc表示降序 asc表示升序
+     * dto = new SortDTO(String transactionType, String orderField)
+     * transactionType desc表示降序 asc表示升序
      * orderField 为实体类中需要比较的字段
      * dto = new SortDTO(String orderField)
-     * orderType 默认为降序
+     * transactionType 默认为降序
      *
      * SortUtil.sortBy 传入的参数为SortDTO的变长列表 排序优先级从左往右降低
      *
