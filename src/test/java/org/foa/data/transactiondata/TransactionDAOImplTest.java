@@ -14,7 +14,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FoaApp.class)
@@ -49,19 +49,6 @@ public class TransactionDAOImplTest {
         transactionDAO.saveAndFlush(t2);
         List<Transaction> arr = transactionDAO.findAllByOrderByTimeAsc();
         assertEquals(true, arr.get(0).getTime().isBefore(arr.get(1).getTime()));
-    }
-
-    @Test
-    @Rollback
-    public void findAllByOrderByProfitDesc() {
-        Transaction t1 = new Transaction();
-        t1.setProfit(200);
-        transactionDAO.saveAndFlush(t1);
-        Transaction t2 = new Transaction();
-        t2.setProfit(300);
-        transactionDAO.saveAndFlush(t2);
-        List<Transaction> arr = transactionDAO.findAllByOrderByTimeAsc();
-        assertEquals(true, arr.get(0).getProfit() < arr.get(1).getProfit());
     }
 
     @Test

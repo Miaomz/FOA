@@ -51,12 +51,6 @@ public interface TransactionDAO extends JpaRepository<Transaction, Long>, Transa
     List<Transaction> findAllByOrderByTimeAsc();
 
     /**
-     * 按盈利降序排列返回所有交易
-     * @return
-     */
-    List<Transaction> findAllByOrderByProfitDesc();
-
-    /**
      * 返回用户的全部交易，按时间降序
      * @param userId 用户Id
      * @return
