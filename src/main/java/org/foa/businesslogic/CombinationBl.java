@@ -3,7 +3,9 @@ package org.foa.businesslogic;
 import com.google.gson.Gson;
 import org.foa.data.combinationdata.CombinationDAO;
 import org.foa.data.optiondata.OptionDAO;
-import org.foa.entity.*;
+import org.foa.entity.Combination;
+import org.foa.entity.Evaluation;
+import org.foa.entity.Option;
 import org.foa.util.ArbitrageUtil;
 import org.foa.util.ResultMessage;
 import org.foa.vo.CombinationVO;
@@ -100,13 +102,13 @@ public class CombinationBl {
         return res;
     }
 
-
     /**
-     * 1. void purchaseCombination(String userId, Combination combination);
-     * Combination需设置四个期权
-     * 2. Combination getCurrentCombinations(String userId);
-     * 3. Evaluation evaluateCombination(Combination combination);
-     * 期权组合的盈利指标暂时仅有Term1-Term2的绝对值
-     * 4. List<Combination> getRankedCombinations(); 得到现在所有的期权组合
+     * find by id
+     * @param cid id of combination
+     * @return specific combination
      */
+    @RequestMapping("/findCombinationById")
+    public Combination findCombinationById(@RequestParam long cid){
+        return combinationDAO.getOne(cid);
+    }
 }

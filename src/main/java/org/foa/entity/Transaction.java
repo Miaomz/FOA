@@ -42,7 +42,7 @@ public class Transaction {
     /**
      * 合约名称
      */
-    private String option;
+    private String optionAbbr;
 
     /**
      * 成交数量
