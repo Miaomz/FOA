@@ -130,8 +130,7 @@ public class TransactionBl {
     @RequestMapping("/findTransactionByUser")
     public List<Transaction> findTransactionsByUser(@RequestParam String userId){
         try {
-            List<Transaction> transactions = transactionDAO.findAll();
-            transactions.removeIf(transaction -> !transaction.getUserId().equals(userId));
+            List<Transaction> transactions = transactionDAO.findByUserIdOrderByTimeDesc(userId);
             return transactions;
         } catch (PersistenceException e){
             return new ArrayList<>();
