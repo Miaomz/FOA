@@ -3,6 +3,7 @@ package org.foa.util;
 import org.foa.entity.Option;
 import org.foa.entity.OptionType;
 import org.foa.entity.ValueState;
+import org.foa.vo.Quotation;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -272,6 +273,28 @@ public class HttpUtil {
         result.forEach(option -> option.setTime(time));
 
         return result;
+    }
+
+    public static Quotation getQuotation(){
+        String resText = getResponseWithoutBody(OPT_CON + "sh510050");
+        if(resText == null)
+            return null;
+        //remove useless characters
+        resText = resText.substring(resText.indexOf('"') + 1);
+        resText = resText.substring(0, resText.indexOf('"'));
+
+        String[] numbers = resText.split(",");
+        Quotation quotation = new Quotation();
+        quotation.setName("50ETF");
+        quotation.setOpeningPrice(Double.valueOf(numbers[1]));
+        quotation.setClosingPrice(Double.valueOf(numbers[2]));
+        quotation.setLatestPrice(Double.valueOf(numbers[3]));
+        quotation.setHighestPrice(Double.valueOf(numbers[4]));
+        quotation.setLowestPrice(Double.valueOf(numbers[5]));
+        quotation.setQuantity(Integer.valueOf(numbers[8]));
+        quotation.setSum(Double.valueOf(numbers[9]));
+
+        return quotation;
     }
 
     public static void main(String[] args) {

@@ -6,9 +6,11 @@ import org.foa.entity.Option;
 import org.foa.entity.OptionItem;
 import org.foa.entity.OptionType;
 import org.foa.entity.User;
+import org.foa.util.HttpUtil;
 import org.foa.util.ResultMessage;
 import org.foa.util.SortDTO;
 import org.foa.util.SortUtil;
+import org.foa.vo.Quotation;
 import org.foa.vo.Target;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +31,11 @@ public class OptionBl {
 
     @Autowired
     private OptionDAO optionDAO;
+
+    @RequestMapping("/getQuotation")
+    public Quotation getQuotation(){
+        return HttpUtil.getQuotation();
+    }
 
     /**
      * 获取这一时刻可以获取的所有期权的信息

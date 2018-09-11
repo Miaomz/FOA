@@ -1,11 +1,7 @@
 package org.foa.data.transactiondata;
 
 import org.foa.FoaApp;
-import org.foa.data.optiondata.OptionDAO;
-import org.foa.entity.Option;
 import org.foa.entity.Transaction;
-import org.foa.entity.TransactionDirection;
-import org.foa.entity.TransactionType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +13,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,38 +23,7 @@ import static org.junit.Assert.assertEquals;
 public class TransactionDAOImplTest {
 
     @Autowired
-    private OptionDAO optionDAO;
-
-    @Autowired
     private TransactionDAO transactionDAO;
-
-    @Test
-    @Rollback(false)
-    public void addTransactions(){
-        Random ra = new Random();
-        for(int i = 0; i <= 99; i++){
-            Transaction t = new Transaction();
-            t.setUserId("Default");
-            long optId = ra.nextInt(80) + 1;
-            Option option = optionDAO.getOne(optId);
-            t.setOptionAbbr(option.getOptionAbbr());
-            t.setPrice(option.getLatestPrice());
-            t.setTime(option.getTime());
-            int q = ra.nextInt(100);
-            t.setQuantity(q);
-            int t1 = ra.nextInt(2);
-            int t2 = ra.nextInt(2);
-            t.setTransactionDirection(TransactionDirection.values()[t1]);
-            t.setTransactionType(TransactionType.values()[t2]);
-            transactionDAO.saveAndFlush(t);
-        }
-    }
-
-    @Test
-    @Rollback
-    public void test(){
-        System.out.println(transactionDAO.findAll().size());
-    }
 
     @Test
     @Rollback
