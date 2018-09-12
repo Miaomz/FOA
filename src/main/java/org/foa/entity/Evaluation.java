@@ -16,9 +16,15 @@ import javax.persistence.Embeddable;
 @AllArgsConstructor
 @Embeddable
 public class Evaluation {
+
     /**
      * |term1-term2|
      */
     private double difference;
+
+    /**
+     * 期望可套利值
+     */
+    private double expectedEarning;
 
 }

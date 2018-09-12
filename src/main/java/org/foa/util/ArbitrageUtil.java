@@ -85,7 +85,8 @@ public class ArbitrageUtil {
 
     public static Evaluation calculateEvaluation(Option optUp1, Option optDown1, Option optUp2, Option optDown2){
         double gamma = 0.0415;  //无风险利率，用16国债19的到期收益率计算
-        double tau = (optUp1.getExpireDay().toEpochDay() - LocalDate.now().toEpochDay()) / 360.0;
+        long period = optUp1.getExpireDay().toEpochDay() - LocalDate.now().toEpochDay();
+        double tau = (period) / 360.0;
 
         double X1 = optUp1.getExecPrice();
         double X2 = optUp2.getExecPrice();
@@ -96,7 +97,10 @@ public class ArbitrageUtil {
 
         double term1 = P1 - P2;
         double term2 = (C1 - C2) + (X1 - X2) * Math.exp((0 - gamma) * tau);
-        Evaluation eva = new Evaluation(Math.abs(term1 - term2));
+
+        double difference = Math.abs(term1 - term2);
+        double expectedDifference = difference * Math.exp(gamma* (period));
+        Evaluation eva = new Evaluation(difference, expectedDifference);
         return eva;
     }
 
