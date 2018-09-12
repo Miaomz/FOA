@@ -1,6 +1,7 @@
 package org.foa.data.combinationdata;
 
 import org.foa.entity.Combination;
+import org.foa.entity.CombinationState;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -15,5 +16,7 @@ public interface CombinationDAO extends JpaRepository<Combination, Long>, Combin
      * @return
      */
     List<Combination> findByUserIdOrderByEvaluationDifferenceDesc(String userId);
+
+    List<Combination> findByUserIdAndStateOrderByEvaluationDifferenceDesc(String userId, CombinationState state);
     
 }

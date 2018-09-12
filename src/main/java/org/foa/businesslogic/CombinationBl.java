@@ -1,9 +1,9 @@
 package org.foa.businesslogic;
 
-import com.google.gson.Gson;
 import org.foa.data.combinationdata.CombinationDAO;
 import org.foa.data.optiondata.OptionDAO;
 import org.foa.entity.Combination;
+import org.foa.entity.CombinationState;
 import org.foa.entity.Evaluation;
 import org.foa.entity.Option;
 import org.foa.util.ArbitrageUtil;
@@ -49,7 +49,13 @@ public class CombinationBl {
     }
 
     /**
-     * 购买某一期权组合 例：{userId: xx, optUp1: 50ETF购9月2750, optDown1: 50ETF沽9月2750, optUp2: 50ETF购10月2750, optDown2: 50ETF沽10月2750} 注：4个合约的到期日应该为同一天
+     * 购买一个期权组合
+     * @param userId
+     * @param optUp1
+     * @param optDown1
+     * @param optUp2
+     * @param optDown2
+     * 注 四个合约到期日应该是同一天
      * @return
      */
     @RequestMapping("/purchaseCombination")
@@ -59,7 +65,13 @@ public class CombinationBl {
     }
 
     /**
-     * 收藏某一期权组合 例：{userId: xx, optUp1: 50ETF购9月2750, optDown1: 50ETF沽9月2750, optUp2: 50ETF购10月2750, optDown2: 50ETF沽10月2750} 注：4个合约的到期日应该为同一天
+     * 收藏某一期权组合
+     * @param userId
+     * @param optUp1
+     * @param optDown1
+     * @param optUp2
+     * @param optDown2
+     * 注 四个合约的到期日应为同一天
      * @return
      */
     @RequestMapping("/addInterestedCombination")
@@ -68,25 +80,31 @@ public class CombinationBl {
         combination.setUserId(userId);
         combination.setTime(LocalDateTime.now());
         combination.setEvaluation(evaluate(combination));
+        combination.setState(CombinationState.INTERESTED);
         Combination entity = combinationDAO.saveAndFlush(combination);
         return entity.getCid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS; //自增主键id从1开始，若为0则为默认值失败
     }
 
     /**
-     * 得到用户所持有的所有期权组合
+     * 根据状态得到用户的期权组合
      * @param userId 用户Id
+     * @param state INTERESTED 收藏的 PURCHASED 购入的(持有的)
      * @return
      */
-    @RequestMapping("/getCurrentCombinations")
-    public List<CombinationVO> getCurrentCombinations(@RequestParam String userId) {
+    @RequestMapping("/getCombinationsByState")
+    public List<CombinationVO> getCurrentCombinations(@RequestParam String userId, @RequestParam CombinationState state) {
         List<CombinationVO> res = new ArrayList<>();
-        List<Combination> combs =  combinationDAO.findByUserIdOrderByEvaluationDifferenceDesc(userId);
+        List<Combination> combs =  combinationDAO.findByUserIdAndStateOrderByEvaluationDifferenceDesc(userId, state);
         combs.forEach(combination -> res.add(trans(combination)));
         return res;
     }
 
     /**
      * 评价某一期权组合
+     * @param optUp1
+     * @param optDown1
+     * @param optUp2
+     * @param optDown2
      * @return 例：{difference: 200} difference为|term1 - term2|
      */
     @RequestMapping("/evaluateCombination")

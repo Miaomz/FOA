@@ -61,6 +61,12 @@ public class Combination implements Comparable<Combination>{
     private LocalDateTime time;
 
     /**
+     * 组合的状态，收藏 或 购入 或 卖出
+     * 一个组合正常生命周期为 游离(DEFAULT)->购入(PURCHASED)->SOLD(卖出)
+     */
+    private CombinationState state = CombinationState.DEFAULT;
+
+    /**
      * 暂时定为属性
      */
     @Embedded
