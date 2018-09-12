@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/CombinationBl")
 public class CombinationBl {
 
-    private Gson gson = new Gson();
-
     @Autowired
     private CombinationDAO combinationDAO;
 
@@ -51,14 +49,23 @@ public class CombinationBl {
     }
 
     /**
-     * 添加某一期权组合
-     * @param combinationJson 例：{userId: xx, optUp1: 50ETF购9月2750, optDown1: 50ETF沽9月2750, optUp2: 50ETF购10月2750, optDown2: 50ETF沽10月2750} 注：4个合约的到期日应该为同一天
+     * 购买某一期权组合 例：{userId: xx, optUp1: 50ETF购9月2750, optDown1: 50ETF沽9月2750, optUp2: 50ETF购10月2750, optDown2: 50ETF沽10月2750} 注：4个合约的到期日应该为同一天
      * @return
      */
     @RequestMapping("/purchaseCombination")
     @Transactional
-    public ResultMessage purchaseCombination(@RequestParam String combinationJson) {
-        Combination combination = gson.fromJson(combinationJson, Combination.class);
+    public ResultMessage purchaseCombination(@RequestParam String userId, @RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2) {
+        return ResultMessage.SUCCESS;
+    }
+
+    /**
+     * 收藏某一期权组合 例：{userId: xx, optUp1: 50ETF购9月2750, optDown1: 50ETF沽9月2750, optUp2: 50ETF购10月2750, optDown2: 50ETF沽10月2750} 注：4个合约的到期日应该为同一天
+     * @return
+     */
+    @RequestMapping("/addInterestedCombination")
+    public ResultMessage addInterestedCombination(@RequestParam String userId, @RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2) {
+        Combination combination = new Combination(optUp1, optDown1, optUp2, optDown2);
+        combination.setUserId(userId);
         combination.setTime(LocalDateTime.now());
         combination.setEvaluation(evaluate(combination));
         Combination entity = combinationDAO.saveAndFlush(combination);
@@ -80,12 +87,11 @@ public class CombinationBl {
 
     /**
      * 评价某一期权组合
-     * @param combinationJson 例：{optUp1: 50ETF购9月2750, optDown1: 50ETF沽9月2750, optUp2: 50ETF购10月2750, optDown2: 50ETF沽10月2750} 注：4个合约的到期日应该为同一天
      * @return 例：{difference: 200} difference为|term1 - term2|
      */
     @RequestMapping("/evaluateCombination")
-    public Evaluation evaluateCombination(@RequestParam String combinationJson) {
-        Combination combination = gson.fromJson(combinationJson, Combination.class);
+    public Evaluation evaluateCombination(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2) {
+        Combination combination = new Combination(optUp1, optDown1, optUp2, optDown2);
         return evaluate(combination);
     }
 
