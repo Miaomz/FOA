@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.PersistenceException;
+import javax.servlet.http.HttpSession;
+
+import static org.foa.util.Const.USER_ID;
 
 @RestController
 @RequestMapping("/UserBl")
@@ -30,7 +33,7 @@ public class UserBl {
      * @return resultMessage
      */
     @RequestMapping("/login")
-    private ResultMessage login(@RequestParam String username, @RequestParam String password) {
+    private ResultMessage login(@RequestParam String username, @RequestParam String password, HttpSession session) {
         try {
             User targetUser = userDAO.getOne(username);
 
@@ -40,6 +43,8 @@ public class UserBl {
 
             String truePassword = targetUser.getPassword();
             if (MD5Encrypt.MD5(password).equals(truePassword)){
+                // save the username in the session
+                session.setAttribute(USER_ID, username);
                 return ResultMessage.SUCCESS;
             } else {
                 return ResultMessage.FAILURE;
@@ -47,6 +52,12 @@ public class UserBl {
         } catch (PersistenceException e){
             return ResultMessage.FAILURE;
         }
+    }
+
+    @RequestMapping("/logout")
+    private ResultMessage logout(HttpSession session){
+        session.invalidate();
+        return ResultMessage.SUCCESS;
     }
 
     /**
