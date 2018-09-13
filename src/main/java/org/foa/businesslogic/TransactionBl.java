@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.foa.entity.TransactionDirection.SELL;
+
 @RestController
 @RequestMapping("/TransactionBl")
 public class TransactionBl {
@@ -219,6 +221,25 @@ public class TransactionBl {
             return new ArrayList<>();
         }
     }
+
+    /**
+     * calculate the total income of specific user, but only the cash will be counted.
+     * @param userId user id
+     * @return the total income
+     */
+    @RequestMapping("/calcIncome")
+    public Double calcIncome(@RequestParam String userId){
+        List<Transaction> transactions = transactionDAO.findByUserIdOrderByTimeDesc(userId);
+        double income = 0;
+        for (Transaction transaction : transactions) {
+            double amount = transaction.getQuantity() * transaction.getPrice();
+            if (transaction.getTransactionDirection() == SELL){
+                income += amount;
+            } else {//buy
+                income -= amount;
+            }
+            income -= transaction.getFee();
+        }
+        return income;
+    }
 }
-
-
