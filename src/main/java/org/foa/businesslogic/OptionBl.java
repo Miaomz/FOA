@@ -1,15 +1,11 @@
 package org.foa.businesslogic;
 
-import com.google.gson.Gson;
-import org.foa.data.optiondata.OptionDAO;
 import org.foa.entity.Option;
 import org.foa.entity.OptionItem;
 import org.foa.entity.OptionType;
 import org.foa.entity.User;
-import org.foa.util.HttpUtil;
+import org.foa.service.optionservice.OptionService;
 import org.foa.util.ResultMessage;
-import org.foa.util.SortDTO;
-import org.foa.util.SortUtil;
 import org.foa.vo.Quotation;
 import org.foa.vo.Target;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,23 +14,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/OptionBl")
 public class OptionBl {
 
-    private Gson gson = new Gson();
-
     @Autowired
-    private OptionDAO optionDAO;
+    private OptionService optionService;
 
     @RequestMapping("/getQuotation")
     public Quotation getQuotation(){
-        return HttpUtil.getQuotation();
+        return optionService.getQuotation();
     }
 
     /**
@@ -44,16 +35,7 @@ public class OptionBl {
      */
     @RequestMapping("/getTargets")
     public List<Target> getTargets() {
-        List<Target> targets = new ArrayList<>();
-        List<Option> options = optionDAO.findCurrentOptions();
-        Map<Double, List<Option>> combs = options.stream().collect(Collectors.groupingBy(Option::getExecPrice));
-        for(List<Option> opts : combs.values()){
-            assert opts.size() == 2 : "有多个标的物行权价相同";
-            Option optUp = opts.get(0).getOptionType() == OptionType.UP ? opts.get(0) : opts.get(1);
-            Option optDown = opts.get(0).getOptionType() == OptionType.DOWN ? opts.get(0) : opts.get(1);
-            targets.add(new Target(optUp, optDown));
-        }
-        return targets;
+        return optionService.getTargets();
     }
 
     /**
@@ -65,12 +47,7 @@ public class OptionBl {
      */
     @RequestMapping("/getTarget")
     public Target getTarget(@RequestParam String tid){
-        assert tid.contains("50ETF") : "非50ETF";
-        String prefix = "50ETF";
-        String suffix = tid.substring(5);
-        Option optUp = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(prefix + "购" + suffix);
-        Option optDown = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(prefix + "沽" + suffix);
-        return new Target(optUp, optDown);
+        return optionService.getTarget(tid);
     }
 
     /**
@@ -79,7 +56,7 @@ public class OptionBl {
      */
     @RequestMapping("/getOptions")
     public List<Option> getOptions() {
-        return optionDAO.findCurrentOptions();
+        return optionService.getOptions();
     }
 
     /**
@@ -89,7 +66,7 @@ public class OptionBl {
      */
     @RequestMapping("/getOption")
     public Option getOption(@RequestParam String optionAbbr) {
-        return optionDAO.findFirstByOptionAbbrOrderByTimeDesc(optionAbbr);
+        return optionService.getOption(optionAbbr);
     }
 
     /**
@@ -99,7 +76,7 @@ public class OptionBl {
      */
     @RequestMapping("/getCategory")
     public List<Option> getCategory(@RequestParam OptionType optionType) {
-        return optionDAO.findByOptionType(optionType);
+        return optionService.getCategory(optionType);
     }
 
     /**
@@ -112,14 +89,7 @@ public class OptionBl {
      */
     @RequestMapping("/getRanking")
     public List<OptionItem> getRanking(@RequestParam int dayNum, @RequestParam float upperLimit, @RequestParam float lowerLimit, @RequestParam String sortType) {
-        List<Option> optsSorted = optionDAO.findCurrentOptions(SortUtil.sortBy(new SortDTO(sortType))); //排序
-        List<Option> optsAfterFilter = optsSorted.stream().filter(option -> option.getQuoteChange() >= lowerLimit && option.getQuoteChange() <= upperLimit).collect(Collectors.toList()); //筛选
-        List<OptionItem> res = new ArrayList<>();
-        long rank = 0;
-        for (Option opt : optsAfterFilter){
-            res.add(new OptionItem(rank++, opt));
-        }
-        return res;
+        return optionService.getRanking(dayNum, upperLimit, lowerLimit, sortType);
     }
 
     /**
@@ -131,7 +101,7 @@ public class OptionBl {
     @RequestMapping("/addInterestedOption")
     @Transactional
     public ResultMessage addInterestedOption(@RequestParam String optionAbbr, @RequestParam String userId) {
-        return optionDAO.addInterestedOption(optionAbbr, userId);
+        return optionService.addInterestedOption(optionAbbr, userId);
     }
 
     /**
@@ -143,7 +113,7 @@ public class OptionBl {
     @RequestMapping("/deleteInterestedOption")
     @Transactional
     public ResultMessage deleteInterestedOption(@RequestParam String optionAbbr, @RequestParam String userId) {
-        return optionDAO.deleteInterestedOption(optionAbbr, userId);
+        return optionService.deleteInterestedOption(optionAbbr, userId);
     }
 
 
@@ -154,7 +124,7 @@ public class OptionBl {
      */
     @RequestMapping("/findInterestedOptions")
     public List<Option> findInterestedOptions(@RequestParam String userId) {
-        return optionDAO.findInterestedOptions(userId);
+        return optionService.findInterestedOptions(userId);
     }
 
     /**
@@ -164,7 +134,7 @@ public class OptionBl {
      */
     @RequestMapping("/findInterestingUsers")
     public List<User> findInterestingUsers(@RequestParam String optionAbbr) {
-        return optionDAO.findInterestingUsers(optionAbbr);
+        return optionService.findInterestingUsers(optionAbbr);
     }
 
     /**
