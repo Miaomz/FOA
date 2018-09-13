@@ -1,8 +1,12 @@
 package org.foa.businesslogic;
 
 import com.google.gson.Gson;
+import org.foa.data.optiondata.OptionDAO;
 import org.foa.data.transactiondata.TransactionDAO;
+import org.foa.entity.Option;
 import org.foa.entity.Transaction;
+import org.foa.entity.TransactionDirection;
+import org.foa.entity.TransactionType;
 import org.foa.util.ResultMessage;
 import org.foa.util.SortDTO;
 import org.foa.util.SortUtil;
@@ -14,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.PersistenceException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +29,9 @@ public class TransactionBl {
 
     @Autowired
     private TransactionDAO transactionDAO;
+
+    @Autowired
+    private OptionDAO optionDAO;
 
     /*
      * 1. ResultMessage addTransaction(Transaction t);
@@ -43,6 +51,29 @@ public class TransactionBl {
      * double profit;
      * }
      */
+
+    /**
+     * 购买单个期权
+     * @param optionAbbr 期权合约简称
+     * @param type OPEN 开仓 CLOSE 平仓
+     * @param direction BUY 买进 SELL 卖出
+     * @param num 交易数量
+     * @param userId
+     * @return
+     */
+    @RequestMapping("/purchaseOption")
+    public ResultMessage purchaseOption(@RequestParam String optionAbbr, @RequestParam TransactionType type, @RequestParam TransactionDirection direction, @RequestParam Integer num, @RequestParam String userId){
+        Option option = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(optionAbbr);
+        Transaction transaction = new Transaction();
+        transaction.setTransactionType(type);
+        transaction.setTransactionDirection(direction);
+        transaction.setQuantity(num);
+        transaction.setUserId(userId);
+        transaction.setOptionAbbr(optionAbbr);
+        transaction.setTime(LocalDateTime.now());
+        transaction.setPrice(option.getLatestPrice());
+        return transactionDAO.saveAndFlush(transaction).getTid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS;
+    }
 
     /**
      * addTransaction

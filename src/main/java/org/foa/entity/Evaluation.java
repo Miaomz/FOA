@@ -17,6 +17,10 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class Evaluation {
 
+    private double term1;
+
+    private double term2;
+
     /**
      * |term1-term2|
      */

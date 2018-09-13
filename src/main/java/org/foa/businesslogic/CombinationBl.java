@@ -2,10 +2,8 @@ package org.foa.businesslogic;
 
 import org.foa.data.combinationdata.CombinationDAO;
 import org.foa.data.optiondata.OptionDAO;
-import org.foa.entity.Combination;
-import org.foa.entity.CombinationState;
-import org.foa.entity.Evaluation;
-import org.foa.entity.Option;
+import org.foa.data.transactiondata.TransactionDAO;
+import org.foa.entity.*;
 import org.foa.util.ArbitrageUtil;
 import org.foa.util.ResultMessage;
 import org.foa.vo.CombinationVO;
@@ -31,6 +29,9 @@ public class CombinationBl {
     @Autowired
     private OptionDAO optionDAO;
 
+    @Autowired
+    private TransactionDAO transactionDAO;
+
     private CombinationVO trans(Combination combination){
         CombinationVO combinationVO = new CombinationVO(combination);
         combinationVO.setOptUp1(optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp1()));
@@ -48,6 +49,13 @@ public class CombinationBl {
         return ArbitrageUtil.calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
     }
 
+    private void trade(Combination combination, boolean bear){
+        LocalDateTime time = LocalDateTime.now();
+        if (bear){
+
+        }
+    }
+
     /**
      * 购买一个期权组合
      * @param userId
@@ -61,6 +69,14 @@ public class CombinationBl {
     @RequestMapping("/purchaseCombination")
     @Transactional
     public ResultMessage purchaseCombination(@RequestParam String userId, @RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2) {
+        Combination combination = new Combination(optUp1, optDown1, optUp2, optDown2);
+        combination.setUserId(userId);
+        combination.setTime(LocalDateTime.now());
+        Evaluation eva = evaluate(combination);
+        combination.setEvaluation(eva);
+        combination.setState(CombinationState.PURCHASED);
+        trade(combination, eva.getTerm1() >= eva.getTerm2());
+        Combination entity = combinationDAO.saveAndFlush(combination);
         return ResultMessage.SUCCESS;
     }
 

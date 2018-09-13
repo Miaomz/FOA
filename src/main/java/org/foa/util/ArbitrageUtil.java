@@ -99,8 +99,8 @@ public class ArbitrageUtil {
         double term2 = (C1 - C2) + (X1 - X2) * Math.exp((0 - gamma) * tau);
 
         double difference = Math.abs(term1 - term2);
-        double expectedDifference = difference * Math.exp(gamma* (period));
-        Evaluation eva = new Evaluation(difference, expectedDifference);
+        double expectedEarning = difference * Math.exp(gamma * period);
+        Evaluation eva = new Evaluation(term1, term2, difference, expectedEarning);
         return eva;
     }
 
