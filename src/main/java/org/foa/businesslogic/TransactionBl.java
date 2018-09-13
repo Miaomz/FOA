@@ -230,6 +230,30 @@ public class TransactionBl {
     @RequestMapping("/calcIncome")
     public Double calcIncome(@RequestParam String userId){
         List<Transaction> transactions = transactionDAO.findByUserIdOrderByTimeDesc(userId);
+        return calcIncomeInPeriod(transactions);
+    }
+
+    /**
+     * calculate the income of one user yesterday, only cash counted
+     * @param userId user id
+     * @return user's income yesterday
+     */
+    @RequestMapping("/calcIncomeYesterday")
+    public Double calcIncomeYesterday(@RequestParam String userId){
+        LocalDateTime now = LocalDateTime.now();
+        now = now.minusDays(1);
+        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
+        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
+        List<Transaction> transactions = transactionDAO.findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeDesc(userId, startTime, endTime);
+        return calcIncomeInPeriod(transactions);
+    }
+
+    /**
+     * calc income according to transaction records
+     * @param transactions transactions
+     * @return income
+     */
+    private double calcIncomeInPeriod(List<Transaction> transactions){
         double income = 0;
         for (Transaction transaction : transactions) {
             double amount = transaction.getQuantity() * transaction.getPrice();
