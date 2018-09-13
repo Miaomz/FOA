@@ -3,10 +3,8 @@ package org.foa.businesslogic;
 import com.google.gson.Gson;
 import org.foa.data.optiondata.OptionDAO;
 import org.foa.data.transactiondata.TransactionDAO;
-import org.foa.entity.Option;
-import org.foa.entity.Transaction;
-import org.foa.entity.TransactionDirection;
-import org.foa.entity.TransactionType;
+import org.foa.data.userdata.UserDAO;
+import org.foa.entity.*;
 import org.foa.util.ResultMessage;
 import org.foa.util.SortDTO;
 import org.foa.util.SortUtil;
@@ -33,6 +31,8 @@ public class TransactionBl {
     @Autowired
     private OptionDAO optionDAO;
 
+    @Autowired
+    private UserDAO userDAO;
     /*
      * 1. ResultMessage addTransaction(Transaction t);
      * 2. ResultMessage deleteTransaction(Transaction t);
@@ -58,21 +58,38 @@ public class TransactionBl {
      * @param type OPEN 开仓 CLOSE 平仓
      * @param direction BUY 买进 SELL 卖出
      * @param num 交易数量
-     * @param userId
-     * @return
+     * @param userId 用户id
+     * @return resultMessage
      */
     @RequestMapping("/purchaseOption")
+    @Transactional
     public ResultMessage purchaseOption(@RequestParam String optionAbbr, @RequestParam TransactionType type, @RequestParam TransactionDirection direction, @RequestParam Integer num, @RequestParam String userId){
-        Option option = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(optionAbbr);
-        Transaction transaction = new Transaction();
-        transaction.setTransactionType(type);
-        transaction.setTransactionDirection(direction);
-        transaction.setQuantity(num);
-        transaction.setUserId(userId);
-        transaction.setOptionAbbr(optionAbbr);
-        transaction.setTime(LocalDateTime.now());
-        transaction.setPrice(option.getLatestPrice());
-        return transactionDAO.saveAndFlush(transaction).getTid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS;
+        try {
+            User user = userDAO.getOne(userId);
+            double balance = user.getUserInfo().getBalance();
+            Option option = optionDAO.findFirstByOptionAbbrOrderByTimeDesc(optionAbbr);
+
+            if (balance < option.getLatestPrice() * num){
+                return ResultMessage.FAILURE;
+            }
+
+            UserInfo userInfo = user.getUserInfo();
+            userInfo.setBalance(balance - option.getLatestPrice() * num);
+            user.setUserInfo(userInfo);
+            userDAO.saveAndFlush(user);
+
+            Transaction transaction = new Transaction();
+            transaction.setTransactionType(type);
+            transaction.setTransactionDirection(direction);
+            transaction.setQuantity(num);
+            transaction.setUserId(userId);
+            transaction.setOptionAbbr(optionAbbr);
+            transaction.setTime(LocalDateTime.now());
+            transaction.setPrice(option.getLatestPrice());
+            return transactionDAO.saveAndFlush(transaction).getTid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS;
+        }catch (DataAccessException|PersistenceException e){
+            return ResultMessage.FAILURE;
+        }
     }
 
     /**
@@ -103,6 +120,24 @@ public class TransactionBl {
         Transaction transaction = gson.fromJson(transactionJson,Transaction.class);
         try {
             transactionDAO.delete(transaction);
+        } catch (DataAccessException|PersistenceException e){
+            return ResultMessage.FAILURE;
+        }
+        return ResultMessage.SUCCESS;
+    }
+
+    /**
+     * delete in batch
+     * @param tids list of transactions' ids
+     * @return resultMessage
+     */
+    @RequestMapping("/deleteTransactionInBatch")
+    @Transactional
+    public ResultMessage deleteTransactionInBatch(@RequestParam long[] tids){
+        try {
+            for (long tid : tids) {
+                transactionDAO.deleteById(tid);
+            }
         } catch (DataAccessException|PersistenceException e){
             return ResultMessage.FAILURE;
         }
