@@ -2,16 +2,17 @@ package org.foa.businesslogic;
 
 import org.foa.data.combinationdata.CombinationDAO;
 import org.foa.data.optiondata.OptionDAO;
-import org.foa.data.transactiondata.TransactionDAO;
 import org.foa.entity.*;
 import org.foa.util.ArbitrageUtil;
 import org.foa.util.ResultMessage;
 import org.foa.vo.CombinationVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -30,9 +31,9 @@ public class CombinationBl {
     private OptionDAO optionDAO;
 
     @Autowired
-    private TransactionDAO transactionDAO;
+    private TransactionBl transactionBl;
 
-    private CombinationVO trans(Combination combination){
+    private CombinationVO trans(Combination combination) {
         CombinationVO combinationVO = new CombinationVO(combination);
         combinationVO.setOptUp1(optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp1()));
         combinationVO.setOptUp2(optionDAO.findFirstByOptionAbbrOrderByTimeDesc(combination.getOptUp2()));
@@ -49,21 +50,35 @@ public class CombinationBl {
         return ArbitrageUtil.calculateEvaluation(optUp1, optDown1, optUp2, optDown2);
     }
 
-    private void trade(Combination combination, boolean bear){
-        LocalDateTime time = LocalDateTime.now();
-        if (bear){
-
+    /**
+     * 期权组合的交易 开仓与平仓时做相反操作
+     * 期权组合中四个期权的交易方向（买卖）根据是否是多头（term1>=term2）决定
+     * @param combination
+     * @param type
+     * @param bear
+     */
+    private void trade(Combination combination, TransactionType type, boolean bear) {
+        if ((bear && type == TransactionType.OPEN) || (!bear && type == TransactionType.CLOSE)) {
+            transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptUp2(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptDown2(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
+        } else if ((bear && type == TransactionType.CLOSE) || (!bear && type == TransactionType.OPEN)) {
+            transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptUp2(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptDown2(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
         }
     }
 
     /**
      * 购买一个期权组合
+     *
      * @param userId
      * @param optUp1
      * @param optDown1
      * @param optUp2
-     * @param optDown2
-     * 注 四个合约到期日应该是同一天
+     * @param optDown2 注 四个合约到期日应该是同一天
      * @return
      */
     @RequestMapping("/purchaseCombination")
@@ -75,19 +90,40 @@ public class CombinationBl {
         Evaluation eva = evaluate(combination);
         combination.setEvaluation(eva);
         combination.setState(CombinationState.PURCHASED);
-        trade(combination, eva.getTerm1() >= eva.getTerm2());
-        Combination entity = combinationDAO.saveAndFlush(combination);
+        //开仓
+        trade(combination, TransactionType.OPEN, eva.getTerm1() >= eva.getTerm2());
+        return combinationDAO.saveAndFlush(combination).getCid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS;
+    }
+
+    /**
+     * 在到期日时卖出持有的期权组合
+     *
+     * @param cid 用户已持有的期权组合的id
+     * @return
+     */
+    @RequestMapping("/sellCombination")
+    @Transactional
+    public ResultMessage sellCombination(@RequestParam Long cid) {
+        try {
+            Combination combination = combinationDAO.getOne(cid);
+            combination.setState(CombinationState.SOLD);
+            combinationDAO.saveAndFlush(combination);
+            //平仓
+            trade(combination, TransactionType.CLOSE, combination.getEvaluation().getTerm1() >= combination.getEvaluation().getTerm2());
+        } catch (DataAccessException | PersistenceException e) {
+            return ResultMessage.FAILURE;
+        }
         return ResultMessage.SUCCESS;
     }
 
     /**
      * 收藏某一期权组合
+     *
      * @param userId
      * @param optUp1
      * @param optDown1
      * @param optUp2
-     * @param optDown2
-     * 注 四个合约的到期日应为同一天
+     * @param optDown2 注 四个合约的到期日应为同一天
      * @return
      */
     @RequestMapping("/addInterestedCombination")
@@ -103,20 +139,22 @@ public class CombinationBl {
 
     /**
      * 根据状态得到用户的期权组合
+     *
      * @param userId 用户Id
-     * @param state INTERESTED 收藏的 PURCHASED 购入的(持有的)
+     * @param state  INTERESTED 收藏的 PURCHASED 购入的(持有的)
      * @return
      */
     @RequestMapping("/getCombinationsByState")
     public List<CombinationVO> getCurrentCombinations(@RequestParam String userId, @RequestParam CombinationState state) {
         List<CombinationVO> res = new ArrayList<>();
-        List<Combination> combs =  combinationDAO.findByUserIdAndStateOrderByEvaluationDifferenceDesc(userId, state);
+        List<Combination> combs = combinationDAO.findByUserIdAndStateOrderByEvaluationDifferenceDesc(userId, state);
         combs.forEach(combination -> res.add(trans(combination)));
         return res;
     }
 
     /**
      * 评价某一期权组合
+     *
      * @param optUp1
      * @param optDown1
      * @param optUp2
@@ -131,6 +169,7 @@ public class CombinationBl {
 
     /**
      * 得到这一时刻可以得到的所有期权组合，默认按|term1-term2|倒叙排列
+     *
      * @return
      */
     @RequestMapping("/getRankedCombinations")
@@ -142,11 +181,12 @@ public class CombinationBl {
 
     /**
      * find by id
+     *
      * @param cid id of combination
      * @return specific combination
      */
     @RequestMapping("/findCombinationById")
-    public Combination findCombinationById(@RequestParam long cid){
+    public Combination findCombinationById(@RequestParam long cid) {
         return combinationDAO.getOne(cid);
     }
 }
