@@ -3,6 +3,7 @@ package org.foa.data.transactiondata;
 import org.foa.entity.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -56,5 +57,14 @@ public interface TransactionDAO extends JpaRepository<Transaction, Long>, Transa
      * @return
      */
     List<Transaction> findByUserIdOrderByTimeDesc(String userId);
+
+    /**
+     * 返回用户时间段内的交易，按时间降序
+     * @param userId
+     * @param startTime
+     * @param endTime
+     * @return
+     */
+    List<Transaction> findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeDesc(String userId, LocalDateTime startTime, LocalDateTime endTime);
 
 }
