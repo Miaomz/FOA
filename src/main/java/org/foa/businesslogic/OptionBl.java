@@ -9,6 +9,7 @@ import org.foa.util.HttpUtil;
 import org.foa.util.ResultMessage;
 import org.foa.util.SortDTO;
 import org.foa.util.SortUtil;
+import org.foa.vo.GraphOfTime;
 import org.foa.vo.Quotation;
 import org.foa.vo.Target;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -168,16 +168,16 @@ public class OptionBl {
     /**
      * 今日期权价格时间序列图
      * @param optionAbbr
-     * @return Map<LocalDateTime, Double>
+     * @return <LocalDateTime, Double>
      */
     @RequestMapping("/drawOptionPrice")
-    public Map<LocalDateTime, Double> drawOptionPrice(@RequestParam String optionAbbr){
-        Map<LocalDateTime, Double> res = new LinkedHashMap<>();
+    public List<GraphOfTime<LocalDateTime>> drawOptionPrice(@RequestParam String optionAbbr){
+        List<GraphOfTime<LocalDateTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
         List<Option> options = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optionAbbr, startTime, endTime);
-        options.forEach(option -> res.put(option.getTime(), option.getLatestPrice()));
+        options.forEach(option -> res.add(new GraphOfTime<>(option.getTime(), option.getLatestPrice())));
         return res;
     }
 

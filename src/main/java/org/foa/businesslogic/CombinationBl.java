@@ -6,6 +6,7 @@ import org.foa.entity.*;
 import org.foa.util.ArbitrageUtil;
 import org.foa.util.ResultMessage;
 import org.foa.vo.CombinationVO;
+import org.foa.vo.GraphOfTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -193,11 +194,11 @@ public class CombinationBl {
      * @param optDown1
      * @param optUp2
      * @param optDown2
-     * @return Map<LocalDateTime, Double>
+     * @return <LocalDateTime, Double>
      */
     @RequestMapping("/drawDifference")
-    public Map<LocalDateTime, Double> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
-        Map<LocalDateTime, Double> res = new LinkedHashMap<>();
+    public List<GraphOfTime<LocalDateTime>> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
+        List<GraphOfTime<LocalDateTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
@@ -206,8 +207,8 @@ public class CombinationBl {
         List<Option> optUp2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp2, startTime, endTime);
         List<Option> optDown2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown2, startTime, endTime);
         for (int i = 0; i < optUp1.length(); i++){
-            res.put(optUp1s.get(i).getTime(),
-                    ArbitrageUtil.calculateEvaluation(optUp1s.get(i), optDown1s.get(i), optUp2s.get(i), optDown2s.get(i)).getDifference());
+            res.add(new GraphOfTime<>(optUp1s.get(i).getTime(),
+                    ArbitrageUtil.calculateEvaluation(optUp1s.get(i), optDown1s.get(i), optUp2s.get(i), optDown2s.get(i)).getDifference()));
         }
         return res;
     }

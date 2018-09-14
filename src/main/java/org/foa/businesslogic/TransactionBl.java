@@ -8,6 +8,7 @@ import org.foa.entity.*;
 import org.foa.util.ResultMessage;
 import org.foa.util.SortDTO;
 import org.foa.util.SortUtil;
+import org.foa.vo.GraphOfTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -258,7 +259,7 @@ public class TransactionBl {
      * and the value is rate of return which ranges from 0 to 1.
      */
     @RequestMapping("/drawReturnRate")
-    public Map<LocalDate, Double> drawReturnRate(@RequestParam String userId){
+    public List<GraphOfTime<LocalDate>> drawReturnRate(@RequestParam String userId){
         if (!userDAO.existsById(userId)){
             return null;
         }
@@ -269,7 +270,7 @@ public class TransactionBl {
 
         LocalDate date = allTransactions.get(allTransactions.size() - 1).getTime().toLocalDate();
         double tempBal = initialBal;
-        Map<LocalDate, Double> result = new LinkedHashMap<>();
+        List<GraphOfTime<LocalDate>> result = new ArrayList<>();
         while (date.isBefore(LocalDate.now())){
             List<Transaction> toBeCalc = new ArrayList<>();
             for (int i = 0; i < allTransactions.size()
@@ -280,7 +281,7 @@ public class TransactionBl {
             }
             tempBal += calcIncomeInPeriod(toBeCalc);
 
-            result.put(date, (tempBal - initialBal)/initialBal);
+            result.add(new GraphOfTime<>(date, (tempBal - initialBal)/initialBal));
             date = date.plusDays(1);//next loop
         }
         return result;
