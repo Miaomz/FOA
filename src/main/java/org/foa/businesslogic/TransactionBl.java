@@ -259,7 +259,7 @@ public class TransactionBl {
     @RequestMapping("/drawReturnRate")
     public List<GraphOfTime<LocalDate>> drawReturnRate(@RequestParam String userId){
         if (!userDAO.existsById(userId)){
-            return null;
+            return new ArrayList<>();
         }
 
         List<Transaction> allTransactions = transactionDAO.findByUserIdOrderByTimeDesc(userId);
