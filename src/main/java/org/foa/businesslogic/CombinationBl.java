@@ -207,7 +207,7 @@ public class CombinationBl {
         List<Option> optDown1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown1, startTime, endTime);
         List<Option> optUp2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp2, startTime, endTime);
         List<Option> optDown2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown2, startTime, endTime);
-        for (int i = 0; i < optUp1.length(); i++){
+        for (int i = 0; i < optUp1s.size(); i++){
             res.add(new GraphOfTime<>(LocalTime.of(optUp1s.get(i).getTime().getHour(), optUp1s.get(i).getTime().getMinute()),
                     ArbitrageUtil.calculateEvaluation(optUp1s.get(i), optDown1s.get(i), optUp2s.get(i), optDown2s.get(i)).getDifference()));
         }
