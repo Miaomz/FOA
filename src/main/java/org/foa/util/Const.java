@@ -17,5 +17,5 @@ public class Const {
     /**
      * 默认时间格式
      */
-    public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
+    public static final String DEFAULT_TIME_FORMAT = "HH:mm";
 }

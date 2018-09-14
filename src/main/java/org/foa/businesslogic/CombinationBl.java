@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -194,11 +195,11 @@ public class CombinationBl {
      * @param optDown1
      * @param optUp2
      * @param optDown2
-     * @return <LocalDateTime, Double>
+     * @return <LocalTime, Double>
      */
     @RequestMapping("/drawDifference")
-    public List<GraphOfTime<LocalDateTime>> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
-        List<GraphOfTime<LocalDateTime>> res = new ArrayList<>();
+    public List<GraphOfTime<LocalTime>> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
+        List<GraphOfTime<LocalTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
@@ -207,7 +208,7 @@ public class CombinationBl {
         List<Option> optUp2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp2, startTime, endTime);
         List<Option> optDown2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown2, startTime, endTime);
         for (int i = 0; i < optUp1.length(); i++){
-            res.add(new GraphOfTime<>(optUp1s.get(i).getTime(),
+            res.add(new GraphOfTime<>(LocalTime.of(optUp1s.get(i).getTime().getHour(), optUp1s.get(i).getTime().getMinute()),
                     ArbitrageUtil.calculateEvaluation(optUp1s.get(i), optDown1s.get(i), optUp2s.get(i), optDown2s.get(i)).getDifference()));
         }
         return res;

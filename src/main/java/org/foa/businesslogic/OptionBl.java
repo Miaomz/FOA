@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -168,16 +169,16 @@ public class OptionBl {
     /**
      * 今日期权价格时间序列图
      * @param optionAbbr
-     * @return <LocalDateTime, Double>
+     * @return <LocalTime, Double>
      */
     @RequestMapping("/drawOptionPrice")
-    public List<GraphOfTime<LocalDateTime>> drawOptionPrice(@RequestParam String optionAbbr){
-        List<GraphOfTime<LocalDateTime>> res = new ArrayList<>();
+    public List<GraphOfTime<LocalTime>> drawOptionPrice(@RequestParam String optionAbbr){
+        List<GraphOfTime<LocalTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
         List<Option> options = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optionAbbr, startTime, endTime);
-        options.forEach(option -> res.add(new GraphOfTime<>(option.getTime(), option.getLatestPrice())));
+        options.forEach(option -> res.add(new GraphOfTime<>(LocalTime.of(option.getTime().getHour(), option.getTime().getMinute()), option.getLatestPrice())));
         return res;
     }
 
