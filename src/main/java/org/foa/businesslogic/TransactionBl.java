@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.PersistenceException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.foa.entity.TransactionDirection.SELL;
 
@@ -246,6 +249,41 @@ public class TransactionBl {
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
         List<Transaction> transactions = transactionDAO.findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeDesc(userId, startTime, endTime);
         return calcIncomeInPeriod(transactions);
+    }
+
+    /**
+     * data to draw graph of return rate
+     * @param userId user id
+     * @return a map where the key is date(from the day that the first transaction was made to yesterday),
+     * and the value is rate of return which ranges from 0 to 1.
+     */
+    @RequestMapping("/drawReturnRate")
+    public Map<LocalDate, Double> drawReturnRate(@RequestParam String userId){
+        if (!userDAO.existsById(userId)){
+            return null;
+        }
+
+        List<Transaction> allTransactions = transactionDAO.findByUserIdOrderByTimeDesc(userId);
+        double income = calcIncomeInPeriod(allTransactions);//income could be negative
+        double initialBal = userDAO.getOne(userId).getUserInfo().getBalance() - income;
+
+        LocalDate date = allTransactions.get(allTransactions.size() - 1).getTime().toLocalDate();
+        double tempBal = initialBal;
+        Map<LocalDate, Double> result = new LinkedHashMap<>();
+        while (date.isBefore(LocalDate.now())){
+            List<Transaction> toBeCalc = new ArrayList<>();
+            for (int i = 0; i < allTransactions.size()
+                    && !allTransactions.get(i).getTime().toLocalDate().isAfter(date); i++) {
+                if (allTransactions.get(i).getTime().toLocalDate().equals(date)){
+                    toBeCalc.add(allTransactions.get(i));
+                }
+            }
+            tempBal += calcIncomeInPeriod(toBeCalc);
+
+            result.put(date, (tempBal - initialBal)/initialBal);
+            date = date.plusDays(1);//next loop
+        }
+        return result;
     }
 
     /**
