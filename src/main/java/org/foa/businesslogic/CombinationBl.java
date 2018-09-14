@@ -15,9 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -181,12 +179,36 @@ public class CombinationBl {
 
     /**
      * find by id
-     *
      * @param cid id of combination
      * @return specific combination
      */
     @RequestMapping("/findCombinationById")
     public Combination findCombinationById(@RequestParam long cid) {
         return combinationDAO.getOne(cid);
+    }
+
+    /**
+     * 期权组合的今日价差图
+     * @param optUp1
+     * @param optDown1
+     * @param optUp2
+     * @param optDown2
+     * @return Map<LocalDateTime, Double>
+     */
+    @RequestMapping("/drawDifference")
+    public Map<LocalDateTime, Double> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
+        Map<LocalDateTime, Double> res = new LinkedHashMap<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
+        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
+        List<Option> optUp1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp1, startTime, endTime);
+        List<Option> optDown1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown1, startTime, endTime);
+        List<Option> optUp2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp2, startTime, endTime);
+        List<Option> optDown2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown2, startTime, endTime);
+        for (int i = 0; i < optUp1.length(); i++){
+            res.put(optUp1s.get(i).getTime(),
+                    ArbitrageUtil.calculateEvaluation(optUp1s.get(i), optDown1s.get(i), optUp2s.get(i), optDown2s.get(i)).getDifference());
+        }
+        return res;
     }
 }

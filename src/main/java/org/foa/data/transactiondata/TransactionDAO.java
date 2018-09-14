@@ -59,12 +59,12 @@ public interface TransactionDAO extends JpaRepository<Transaction, Long>, Transa
     List<Transaction> findByUserIdOrderByTimeDesc(String userId);
 
     /**
-     * 返回用户时间段内的交易，按时间降序
+     * 返回用户时间段内的交易，按时间升序
      * @param userId
      * @param startTime
      * @param endTime
      * @return
      */
-    List<Transaction> findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeDesc(String userId, LocalDateTime startTime, LocalDateTime endTime);
+    List<Transaction> findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeAsc(String userId, LocalDateTime startTime, LocalDateTime endTime);
 
 }

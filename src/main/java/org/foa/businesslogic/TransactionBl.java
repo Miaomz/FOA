@@ -247,7 +247,7 @@ public class TransactionBl {
         now = now.minusDays(1);
         LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
-        List<Transaction> transactions = transactionDAO.findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeDesc(userId, startTime, endTime);
+        List<Transaction> transactions = transactionDAO.findByUserIdAndTimeAfterAndTimeBeforeOrderByTimeAsc(userId, startTime, endTime);
         return calcIncomeInPeriod(transactions);
     }
 

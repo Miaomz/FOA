@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -161,6 +163,22 @@ public class OptionBl {
     @RequestMapping("/findInterestingUsers")
     public List<User> findInterestingUsers(@RequestParam String optionAbbr) {
         return optionDAO.findInterestingUsers(optionAbbr);
+    }
+
+    /**
+     * 今日期权价格时间序列图
+     * @param optionAbbr
+     * @return Map<LocalDateTime, Double>
+     */
+    @RequestMapping("/drawOptionPrice")
+    public Map<LocalDateTime, Double> drawOptionPrice(@RequestParam String optionAbbr){
+        Map<LocalDateTime, Double> res = new LinkedHashMap<>();
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
+        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
+        List<Option> options = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optionAbbr, startTime, endTime);
+        options.forEach(option -> res.put(option.getTime(), option.getLatestPrice()));
+        return res;
     }
 
     /**
