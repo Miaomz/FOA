@@ -201,8 +201,9 @@ public class CombinationBl {
     public List<GraphOfTime<LocalTime>> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
         List<GraphOfTime<LocalTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 0, 0);
-        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 23, 59);
+        //只保存9点到16点开市时间
+        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 9, 0);
+        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 16, 0);
         List<Option> optUp1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp1, startTime, endTime);
         List<Option> optDown1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown1, startTime, endTime);
         List<Option> optUp2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp2, startTime, endTime);
