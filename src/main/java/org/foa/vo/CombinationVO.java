@@ -1,10 +1,12 @@
 package org.foa.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.foa.entity.Combination;
 import org.foa.entity.Option;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -27,6 +29,8 @@ public class CombinationVO implements Comparable<CombinationVO>{
 
     private int purchaseNum = 1;
 
+    @JsonFormat
+    @DateTimeFormat
     private LocalDateTime time;
 
     /**

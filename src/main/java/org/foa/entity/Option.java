@@ -1,8 +1,10 @@
 package org.foa.entity;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
 import java.time.LocalDate;
@@ -97,6 +99,8 @@ public class Option {
     /**
      * 到期日
      */
+    @JsonFormat
+    @DateTimeFormat
     private LocalDate expireDay;
 
     /**
@@ -133,5 +137,7 @@ public class Option {
     /**
      * 最新一次更新时间
      */
+    @JsonFormat
+    @DateTimeFormat
     private LocalDateTime time;
 }
