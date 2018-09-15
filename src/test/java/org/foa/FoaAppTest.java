@@ -1,31 +1,44 @@
-package org.foa.util;
+package org.foa;
 
-import org.foa.FoaApp;
 import org.foa.businesslogic.CombinationBl;
+import org.foa.businesslogic.OptionBl;
+import org.foa.businesslogic.TransactionBl;
+import org.foa.businesslogic.UserBl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import javax.transaction.Transactional;
 
+import static org.junit.Assert.*;
 
+/**
+ * 本类用于添加一些测试数据
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FoaApp.class)
 @WebAppConfiguration
 @Transactional
-public class ArbitrageUtilTest {
+public class FoaAppTest {
+
+    @Autowired
+    private UserBl userBl;
+
+    @Autowired
+    private OptionBl optionBl;
 
     @Autowired
     private CombinationBl combinationBl;
 
+    @Autowired
+    private TransactionBl transactionBl;
+
     @Test
-    public void getOptCombination() {
-        long startTime = System.currentTimeMillis();
-        combinationBl.getRankedCombinations();
-        long endTime = System.currentTimeMillis();
-        System.out.println(endTime - startTime);
+    @Rollback(false)
+    public void test(){
     }
 }

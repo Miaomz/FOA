@@ -75,6 +75,7 @@ public class UserBl {
 
         try {
             User user = new User(username, MD5Encrypt.MD5(firstPassword), User.ROLE_USER, new UserInfo());
+            user.getUserInfo().setBalance(1000);
             userDAO.saveAndFlush(user);
         } catch (DataAccessException |PersistenceException e){
             return ResultMessage.FAILURE;
