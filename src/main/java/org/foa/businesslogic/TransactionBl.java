@@ -20,8 +20,11 @@ import javax.persistence.PersistenceException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static org.foa.entity.TransactionDirection.BUY;
 import static org.foa.entity.TransactionDirection.SELL;
 
 @RestController
@@ -269,6 +272,7 @@ public class TransactionBl {
         LocalDate date = allTransactions.get(allTransactions.size() - 1).getTime().toLocalDate();
         double tempBal = initialBal;
         List<GraphOfTime<LocalDate>> result = new ArrayList<>();
+        Map<String, Integer> holdOptions = new HashMap<>();//key is the abbreviation of option, value is the quantity(could be negative)
         while (date.isBefore(LocalDate.now())){
             List<Transaction> toBeCalc = new ArrayList<>();
             for (int i = 0; i < allTransactions.size()
@@ -278,6 +282,7 @@ public class TransactionBl {
                 }
             }
             tempBal += calcIncomeInPeriod(toBeCalc);
+            tempBal += calcOptionValueAndModifyHoldOptionsInPeriod(holdOptions, toBeCalc, date);
 
             result.add(new GraphOfTime<>(date, (tempBal - initialBal)/initialBal));
             date = date.plusDays(1);//next loop
@@ -290,7 +295,7 @@ public class TransactionBl {
      * @param transactions transactions
      * @return income
      */
-    private double calcIncomeInPeriod(List<Transaction> transactions){
+    private double calcIncomeInPeriod(final List<Transaction> transactions){
         double income = 0;
         for (Transaction transaction : transactions) {
             double amount = transaction.getQuantity() * transaction.getPrice();
@@ -302,5 +307,37 @@ public class TransactionBl {
             income -= transaction.getFee();
         }
         return income;
+    }
+
+    /**
+     * calc the monetary value of the options that user hold and then modify the map that records that
+     * @param holdOptions map which records the options that user hold temporarily
+     * @param transactions transactions
+     * @return monetary value of hold options
+     */
+    private double calcOptionValueAndModifyHoldOptionsInPeriod(Map<String, Integer> holdOptions, final  List<Transaction> transactions, LocalDate date){
+        //modify the map at first
+        for (Transaction transaction : transactions) {
+            String abbr = transaction.getOptionAbbr();
+            int quantity = (transaction.getTransactionDirection() == BUY ? 1 : -1) * transaction.getQuantity();
+
+            Integer existing;
+            if ((existing = holdOptions.get(abbr)) != null){
+                quantity += existing;
+            }
+            if (quantity != 0) {
+                holdOptions.put(abbr, quantity);
+            } else {
+                holdOptions.remove(abbr);
+            }
+        }
+
+        int monetaryValue = 0;
+        LocalDateTime time = date.atTime(18, 0);
+        for (Map.Entry<String, Integer> stringIntegerEntry : holdOptions.entrySet()) {
+            Option temporalOption = optionDAO.findFirstByOptionAbbrAndTimeBeforeOrderByTimeDesc(stringIntegerEntry.getKey(), time);
+            monetaryValue += temporalOption.getLatestPrice() * stringIntegerEntry.getValue();
+        }
+        return monetaryValue;
     }
 }
