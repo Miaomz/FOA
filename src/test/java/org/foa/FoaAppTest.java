@@ -16,9 +16,6 @@ import javax.transaction.Transactional;
 
 import static org.junit.Assert.*;
 
-/**
- * 本类用于添加一些测试数据
- */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FoaApp.class)
 @WebAppConfiguration

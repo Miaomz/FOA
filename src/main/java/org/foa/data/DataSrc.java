@@ -19,9 +19,9 @@ public class DataSrc {
     private OptionDAO optionDAO;
 
     /**
-     * 从早上九点至下午三点，每三分钟获取一次数据
+     * 每个星期一至星期五，从早上九点半至下午三点，每三分钟获取一次数据
      */
-    @Scheduled(cron = "0 */3 9-15 * * ?")
+    @Scheduled(cron = "0 30/3 9-15 0 0 1/5 *")
     public void saveDataFromSina(){
         List<Option> options = HttpUtil.recordAllOptions();
         optionDAO.saveAll(options);
