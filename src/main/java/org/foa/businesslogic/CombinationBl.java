@@ -17,7 +17,9 @@ import javax.persistence.PersistenceException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -57,7 +59,7 @@ public class CombinationBl {
      * @param type
      * @param bear
      */
-    private void trade(Combination combination, TransactionType type, boolean bear) {
+    public void trade(Combination combination, TransactionType type, boolean bear) {
         if ((bear && type == TransactionType.OPEN) || (!bear && type == TransactionType.CLOSE)) {
             transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
             transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
