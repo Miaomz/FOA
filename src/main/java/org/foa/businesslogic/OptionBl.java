@@ -175,9 +175,9 @@ public class OptionBl {
     public List<GraphOfTime<LocalTime>> drawOptionPrice(@RequestParam String optionAbbr){
         List<GraphOfTime<LocalTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        //只保存9点到16点开市时间
-        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 9, 0);
-        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 16, 0);
+        //只保存9点半到15点开市时间
+        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 9, 30);
+        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 15, 0);
         List<Option> options = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optionAbbr, startTime, endTime);
         options.forEach(option -> res.add(new GraphOfTime<>(LocalTime.of(option.getTime().getHour(), option.getTime().getMinute()), option.getLatestPrice())));
         return res;

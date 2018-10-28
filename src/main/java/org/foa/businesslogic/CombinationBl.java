@@ -171,14 +171,18 @@ public class CombinationBl {
 
     /**
      * 得到这一时刻可以得到的所有期权组合，默认按|term1-term2|倒叙排列
-     *
+     * 只返回前80
      * @return
      */
     @RequestMapping("/getRankedCombinations")
     public List<CombinationVO> getRankedCombinations() {
         List<Option> options = optionDAO.findCurrentOptions();
         List<CombinationVO> combinations = ArbitrageUtil.getOptCombination(options).stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
-        return combinations;
+        int toIndex = 80;
+        if(combinations.size() < 80)
+            toIndex = combinations.size();
+        List<CombinationVO> combinationPage = combinations.subList(0, toIndex);
+        return combinationPage;
     }
 
     /**
@@ -203,9 +207,9 @@ public class CombinationBl {
     public List<GraphOfTime<LocalTime>> drawDifference(@RequestParam String optUp1, @RequestParam String optDown1, @RequestParam String optUp2, @RequestParam String optDown2){
         List<GraphOfTime<LocalTime>> res = new ArrayList<>();
         LocalDateTime now = LocalDateTime.now();
-        //只保存9点到16点开市时间
-        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 9, 0);
-        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 16, 0);
+        //只保存9点半到15点开市时间
+        LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 9, 30);
+        LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 15, 0);
         List<Option> optUp1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp1, startTime, endTime);
         List<Option> optDown1s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optDown1, startTime, endTime);
         List<Option> optUp2s = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optUp2, startTime, endTime);
