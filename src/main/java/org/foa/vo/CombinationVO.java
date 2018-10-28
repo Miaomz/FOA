@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.foa.entity.Combination;
+import org.foa.entity.CombinationState;
+import org.foa.entity.Evaluation;
 import org.foa.entity.Option;
 import org.springframework.format.annotation.DateTimeFormat;
 
@@ -52,6 +54,10 @@ public class CombinationVO implements Comparable<CombinationVO>{
         this.purchaseNum = combination.getPurchaseNum();
         this.time = combination.getTime();
         this.difference = combination.getEvaluation().getDifference();
+    }
+
+    public Combination toCombination(){
+        return new Combination(cid, userId, optUp1.getOptionAbbr(), optDown1.getOptionAbbr(), optUp2.getOptionAbbr(), optDown2.getOptionAbbr(), 1, time, CombinationState.DEFAULT, new Evaluation(difference, 0, difference, 0));
     }
 
     @Override
