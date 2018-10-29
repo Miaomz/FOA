@@ -281,8 +281,11 @@ public class TransactionBl {
                     toBeCalc.add(allTransactions.get(i));
                 }
             }
+            System.err.println("breakpoint 1");
             tempBal += calcIncomeInPeriod(toBeCalc);
+            System.err.println("breakpoint 2");
             tempBal += calcOptionValueAndModifyHoldOptionsInPeriod(holdOptions, toBeCalc, date);
+            System.err.println("breakpoint 3");
 
             result.add(new GraphOfTime<>(date, (tempBal - initialBal)/initialBal));
             date = date.plusDays(1);//next loop
