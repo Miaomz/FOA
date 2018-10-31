@@ -236,13 +236,19 @@ public class HttpUtil {
 
     public static List<Option> recordAllOptions(){
         List<Option> result = new ArrayList<>();
-        List<String> availableMonths = getAvailableMonths();
-        for (int i = 0; i < availableMonths.size()-1; i++) {
-            for (int j = i+1; j < availableMonths.size(); j++) {
-                if (availableMonths.get(i).equals(availableMonths.get(j))){
-                    availableMonths.remove(j--);
-                }
-            }
+        List<String> months = getAvailableMonths();
+        List<String> availableMonths = new ArrayList<>();
+//        for (int i = 0; i < availableMonths.size()-1; i++) {
+//            for (int j = i+1; j < availableMonths.size(); j++) {
+//                if (availableMonths.get(i).equals(availableMonths.get(j))){
+//                    availableMonths.remove(j--);
+//                }
+//            }
+//        }
+        for (int i = 0; i < months.size(); i++){
+            String mon = months.get(i);
+            if(!availableMonths.contains(mon))
+                availableMonths.add(mon);
         }
 
         for (String availableMonth : availableMonths) {
