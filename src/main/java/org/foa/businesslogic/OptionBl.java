@@ -180,7 +180,7 @@ public class OptionBl {
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 15, 0);
         List<Option> options = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optionAbbr, startTime, endTime);
         options.forEach(option -> res.add(new GraphOfTime<>(LocalTime.of(option.getTime().getHour(), option.getTime().getMinute()), option.getLatestPrice())));
-        return res;
+        return res.subList(1, res.size());
     }
 
     /**
