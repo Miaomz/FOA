@@ -5,33 +5,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import javax.transaction.Transactional;
-
 /**
  * @author miaomuzhi
- * @since 2018/10/28
+ * @since 2018/10/29
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FoaApp.class)
 @WebAppConfiguration
-public class AutoPurchaseTest {
+public class TransactionBlTest {
 
     @Autowired
-    private AutoPurchase autoPurchase;
+    private TransactionBl transactionBl;
 
     @Test
-    @Transactional(dontRollbackOn = Exception.class)
-    @Rollback(false)//should it be true
-    public void generateTransactionsRecord() {
-        try {
-            autoPurchase.generateTransactionsRecord();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
+    public void drawReturnRate() {
+        System.out.println(transactionBl.drawReturnRate("foo"));
     }
 }

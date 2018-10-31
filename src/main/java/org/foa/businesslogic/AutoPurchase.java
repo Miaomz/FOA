@@ -42,27 +42,31 @@ public class AutoPurchase {
 
     public void generateTransactionsRecord(){
         List<CombinationVO> combinationVOS = ArbitrageUtil.getOptCombination(optionDAO.findCurrentOptions()).stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+        //此处combinations的长度在200以上，故需缩减
+        combinationVOS = combinationVOS.subList(0, 1);
 
-        LocalDateTime origin = LocalDateTime.now().minusMonths(6);
+        LocalDateTime origin = LocalDateTime.now().minusMonths(1);
         for (LocalDateTime endDate = origin.plusDays(10); endDate.isBefore(LocalDateTime.now()); endDate = endDate.plusDays(10)){
             for (CombinationVO combinationVO : combinationVOS) {
                 int indicator = calcPotentialProfits(combinationVO, origin, endDate);
                 if (indicator != 0){
                     Combination combination = combinationVO.toCombination();
                     combination.setTime(endDate);
+                    combination.setUserId("hh");
                     combination.setState(CombinationState.PURCHASED);
-                    combinationBl.trade(combination, TransactionType.OPEN, indicator==1);
+                    combinationBl.trade(combination, TransactionType.OPEN, indicator==1, endDate);
                     combinationDAO.saveAndFlush(combination);
                 }
             }
 
             List<Combination> combinations2dAgo = combinationDAO.findByTimeBeforeOrderByTimeDesc(endDate.minusDays(2));
             List<Combination> combinations1dAgo = combinationDAO.findByTimeBeforeOrderByTimeDesc(endDate.minusDays(1));
-            for (Combination combination : combinations1dAgo) {//close these 1 day ago if they are not closed
+            for (Combination combination : combinations1dAgo) {//close these 1 day ago if they should be closed
                 if (isToClose(combination, endDate.minusDays(1).toLocalDate())){
                     combination.setTime(endDate);
                     combination.setState(CombinationState.SOLD);
-                    combinationBl.trade(combination, TransactionType.CLOSE, combination.getEvaluation().getDifference() >= 0);
+                    combinationBl.trade(combination, TransactionType.CLOSE,
+                            combination.getEvaluation().getTerm1()>=combination.getEvaluation().getTerm2(), endDate);
                     combinationDAO.saveAndFlush(combination);
                 }
             }
@@ -70,7 +74,8 @@ public class AutoPurchase {
                 if (combination.getState()==CombinationState.PURCHASED){
                     boolean isSold = false;
                     for (Combination dAgo : combinations1dAgo) {
-                        if (dAgo.getOptUp1().equals(combination.getOptUp1()) && dAgo.getOptDown1().equals(combination.getOptDown1())
+                        if (dAgo.getState() == CombinationState.SOLD
+                                && dAgo.getOptUp1().equals(combination.getOptUp1()) && dAgo.getOptDown1().equals(combination.getOptDown1())
                                 && dAgo.getOptUp2().equals(combination.getOptUp2()) && dAgo.getOptDown2().equals(combination.getOptDown2())){
                             isSold = true;
                         }
@@ -78,11 +83,13 @@ public class AutoPurchase {
                     if (!isSold){
                         combination.setTime(endDate);
                         combination.setState(CombinationState.SOLD);
-                        combinationBl.trade(combination, TransactionType.CLOSE, combination.getEvaluation().getDifference() >= 0);
+                        combinationBl.trade(combination, TransactionType.CLOSE,
+                                combination.getEvaluation().getTerm1()>=combination.getEvaluation().getTerm2(), endDate);
                         combinationDAO.saveAndFlush(combination);
                     }
                 }
             }
+            System.err.println("end of loop");
         }
     }
 
