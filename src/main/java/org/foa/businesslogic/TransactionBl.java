@@ -71,6 +71,20 @@ public class TransactionBl {
     @RequestMapping("/purchaseOption")
     @Transactional
     public ResultMessage purchaseOption(@RequestParam String optionAbbr, @RequestParam TransactionType type, @RequestParam TransactionDirection direction, @RequestParam Integer num, @RequestParam String userId){
+        return purchaseOption(optionAbbr, type, direction, num, userId, LocalDateTime.now());
+    }
+
+    /**
+     * for generating transactions automatically
+     * @param optionAbbr
+     * @param type
+     * @param direction
+     * @param num
+     * @param userId
+     * @param time
+     * @return
+     */
+    public ResultMessage purchaseOption(String optionAbbr, TransactionType type, TransactionDirection direction, Integer num, String userId, LocalDateTime time){
         try {
             User user = userDAO.getOne(userId);
             double balance = user.getUserInfo().getBalance();
@@ -91,7 +105,7 @@ public class TransactionBl {
             transaction.setQuantity(num);
             transaction.setUserId(userId);
             transaction.setOptionAbbr(optionAbbr);
-            transaction.setTime(LocalDateTime.now());
+            transaction.setTime(time);
             transaction.setPrice(option.getLatestPrice());
             return transactionDAO.saveAndFlush(transaction).getTid() == 0 ? ResultMessage.FAILURE : ResultMessage.SUCCESS;
         }catch (DataAccessException|PersistenceException e){
@@ -269,23 +283,31 @@ public class TransactionBl {
         double income = calcIncomeInPeriod(allTransactions);//income could be negative
         double initialBal = userDAO.getOne(userId).getUserInfo().getBalance() - income;
 
-        LocalDate date = allTransactions.get(allTransactions.size() - 1).getTime().toLocalDate();
+        LocalDate date = allTransactions.get(allTransactions.size()-1).getTime().toLocalDate();
+        for (int i = allTransactions.size()-2; i >= 0 && date.isBefore(LocalDate.now().minusMonths(2)); i--) {
+             date = allTransactions.get(i).getTime().toLocalDate();
+        }
+
         double tempBal = initialBal;
+        double monetaryVal = 0;
         List<GraphOfTime<LocalDate>> result = new ArrayList<>();
         Map<String, Integer> holdOptions = new HashMap<>();//key is the abbreviation of option, value is the quantity(could be negative)
-        while (date.isBefore(LocalDate.now())){
+
+        LocalDate now = LocalDate.now();
+        while (date.isBefore(now)){
             List<Transaction> toBeCalc = new ArrayList<>();
-            for (int i = 0; i < allTransactions.size()
-                    && !allTransactions.get(i).getTime().toLocalDate().isAfter(date); i++) {
+            for (int i = allTransactions.size()-1; i >= 0
+                    && !allTransactions.get(i).getTime().toLocalDate().isAfter(date); i--) {//not isBefore?
                 if (allTransactions.get(i).getTime().toLocalDate().equals(date)){
                     toBeCalc.add(allTransactions.get(i));
                 }
             }
-            System.err.println("breakpoint 1");
+            allTransactions.removeAll(toBeCalc);
+
             tempBal += calcIncomeInPeriod(toBeCalc);
-            System.err.println("breakpoint 2");
-            tempBal += calcOptionValueAndModifyHoldOptionsInPeriod(holdOptions, toBeCalc, date);
-            System.err.println("breakpoint 3");
+            tempBal -= monetaryVal;
+            monetaryVal = calcOptionValueAndModifyHoldOptionsInPeriod(holdOptions, toBeCalc, date);
+            tempBal += monetaryVal;
 
             result.add(new GraphOfTime<>(date, (tempBal - initialBal)/initialBal));
             date = date.plusDays(1);//next loop
@@ -318,7 +340,7 @@ public class TransactionBl {
      * @param transactions transactions
      * @return monetary value of hold options
      */
-    private double calcOptionValueAndModifyHoldOptionsInPeriod(Map<String, Integer> holdOptions, final  List<Transaction> transactions, LocalDate date){
+    private double calcOptionValueAndModifyHoldOptionsInPeriod(Map<String, Integer> holdOptions, final List<Transaction> transactions, final LocalDate date){
         //modify the map at first
         for (Transaction transaction : transactions) {
             String abbr = transaction.getOptionAbbr();
@@ -339,7 +361,9 @@ public class TransactionBl {
         LocalDateTime time = date.atTime(18, 0);
         for (Map.Entry<String, Integer> stringIntegerEntry : holdOptions.entrySet()) {
             Option temporalOption = optionDAO.findFirstByOptionAbbrAndTimeBeforeOrderByTimeDesc(stringIntegerEntry.getKey(), time);
-            monetaryValue += temporalOption.getLatestPrice() * stringIntegerEntry.getValue();
+            if (temporalOption != null){
+                monetaryValue += temporalOption.getLatestPrice() * stringIntegerEntry.getValue();
+            }
         }
         return monetaryValue;
     }

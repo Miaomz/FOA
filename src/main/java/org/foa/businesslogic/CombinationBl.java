@@ -60,16 +60,27 @@ public class CombinationBl {
      * @param bear
      */
     public void trade(Combination combination, TransactionType type, boolean bear) {
+        trade(combination, type, bear, LocalDateTime.now());
+    }
+
+    /**
+     * for generating transactions automatically
+     * @param combination
+     * @param type
+     * @param bear
+     * @param datetime
+     */
+    public void trade(Combination combination, TransactionType type, boolean bear, LocalDateTime datetime) {
         if ((bear && type == TransactionType.OPEN) || (!bear && type == TransactionType.CLOSE)) {
-            transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
-            transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
-            transactionBl.purchaseOption(combination.getOptUp2(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
-            transactionBl.purchaseOption(combination.getOptDown2(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId(), datetime);
+            transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId(), datetime);
+            transactionBl.purchaseOption(combination.getOptUp2(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId(), datetime);
+            transactionBl.purchaseOption(combination.getOptDown2(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId(), datetime);
         } else if ((bear && type == TransactionType.CLOSE) || (!bear && type == TransactionType.OPEN)) {
-            transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
-            transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
-            transactionBl.purchaseOption(combination.getOptUp2(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId());
-            transactionBl.purchaseOption(combination.getOptDown2(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId());
+            transactionBl.purchaseOption(combination.getOptUp1(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId(), datetime);
+            transactionBl.purchaseOption(combination.getOptDown1(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId(), datetime);
+            transactionBl.purchaseOption(combination.getOptUp2(), type, TransactionDirection.SELL, combination.getPurchaseNum(), combination.getUserId(), datetime);
+            transactionBl.purchaseOption(combination.getOptDown2(), type, TransactionDirection.BUY, combination.getPurchaseNum(), combination.getUserId(), datetime);
         }
     }
 
