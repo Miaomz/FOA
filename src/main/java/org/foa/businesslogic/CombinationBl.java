@@ -229,6 +229,6 @@ public class CombinationBl {
             res.add(new GraphOfTime<>(LocalTime.of(optUp1s.get(i).getTime().getHour(), optUp1s.get(i).getTime().getMinute()),
                     ArbitrageUtil.calculateEvaluation(optUp1s.get(i), optDown1s.get(i), optUp2s.get(i), optDown2s.get(i)).getDifference()));
         }
-        return res.subList(1, res.size());
+        return res;
     }
 }

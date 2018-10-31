@@ -179,8 +179,8 @@ public class OptionBl {
         LocalDateTime startTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 9, 30);
         LocalDateTime endTime = LocalDateTime.of(now.getYear(), now.getMonth(), now.getDayOfMonth(), 15, 0);
         List<Option> options = optionDAO.findByOptionAbbrAndTimeAfterAndTimeBeforeOrderByTimeAsc(optionAbbr, startTime, endTime);
-        options.forEach(option -> res.add(new GraphOfTime<>(LocalTime.of(option.getTime().getHour(), option.getTime().getMinute()), option.getLatestPrice())));
-        return res.subList(1, res.size());
+        options.parallelStream().filter(option -> option.getLatestPrice() != 0).forEach(option -> res.add(new GraphOfTime<>(LocalTime.of(option.getTime().getHour(), option.getTime().getMinute()), option.getLatestPrice())));
+        return res;
     }
 
     /**
