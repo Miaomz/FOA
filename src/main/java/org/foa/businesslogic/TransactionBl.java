@@ -5,9 +5,7 @@ import org.foa.data.optiondata.OptionDAO;
 import org.foa.data.transactiondata.TransactionDAO;
 import org.foa.data.userdata.UserDAO;
 import org.foa.entity.*;
-import org.foa.util.ResultMessage;
-import org.foa.util.SortDTO;
-import org.foa.util.SortUtil;
+import org.foa.util.*;
 import org.foa.vo.GraphOfTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
@@ -17,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.persistence.PersistenceException;
+import java.io.File;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -274,7 +274,19 @@ public class TransactionBl {
      * and the value is rate of return which ranges from 0 to 1.
      */
     @RequestMapping("/drawReturnRate")
+    @SuppressWarnings("unchecked")
     public List<GraphOfTime<LocalDate>> drawReturnRate(@RequestParam String userId){
+        URL url = getClass().getResource("/resp/" + userId + ".json");
+        if (url != null && new File(url.getFile()).exists()){
+            List<GraphOfTime> graphOfTimes = JsonUtil.toArray(FileUtil.readFile(url.getPath()), GraphOfTime.class);
+            List<GraphOfTime<LocalDate>> result = new ArrayList<>(graphOfTimes.size());
+            for (GraphOfTime graphOfTime : graphOfTimes) {
+                GraphOfTime<LocalDate> point = new GraphOfTime<>(LocalDate.parse((String)graphOfTime.getTime()), graphOfTime.getValue());
+                result.add(point);
+            }
+            return result;
+        }
+
         if (!userDAO.existsById(userId)){
             return new ArrayList<>();
         }
@@ -312,6 +324,9 @@ public class TransactionBl {
             result.add(new GraphOfTime<>(date, (tempBal - initialBal)/initialBal));
             date = date.plusDays(1);//next loop
         }
+
+        FileUtil.writeFile(getClass().getResource("/resp").getPath() + "/" + userId + ".json",
+                JsonUtil.toJson(result));
         return result;
     }
 
