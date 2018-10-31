@@ -34,7 +34,7 @@ public class AutoPurchase {
     @Autowired
     private CombinationDAO combinationDAO;
 
-    private static int threshold = 3;
+    private static int threshold = 4;
 
     public static void setThreshold(int threshold) {
         AutoPurchase.threshold = threshold;
@@ -45,8 +45,11 @@ public class AutoPurchase {
         //此处combinations的长度在200以上，故需缩减
         combinationVOS = combinationVOS.subList(0, 1);
 
-        LocalDateTime origin = LocalDateTime.now().minusMonths(1);
-        for (LocalDateTime endDate = origin.plusDays(10); endDate.isBefore(LocalDateTime.now()); endDate = endDate.plusDays(10)){
+        LocalDateTime origin = LocalDateTime.now().minusMonths(1).plusDays(5);
+        LocalDateTime endDay = LocalDateTime.now().minusDays(5);
+        for (LocalDateTime endDate = origin.plusDays(10); endDate.isBefore(endDay); endDate = endDate.plusDays(10)){
+
+
             for (CombinationVO combinationVO : combinationVOS) {
                 int indicator = calcPotentialProfits(combinationVO, origin, endDate);
                 if (indicator != 0){
