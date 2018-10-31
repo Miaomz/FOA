@@ -44,6 +44,10 @@ public interface OptionDAO extends JpaRepository<Option, Long>, OptionCustom{
      */
     Option findFirstByOptionAbbrAndTimeBeforeOrderByTimeDesc(String optionAbbr, LocalDateTime time);
 
+    @Query("select opt from Option opt where opt.time in" +
+            "(select max(temp.time) from Option temp where temp.time <= ?1)")
+    List<Option> findPastOptions(LocalDateTime time);
+
     /**
      * 得到某个期权合约的所有历史信息
      * @param optionAbbr 期权合约简称
