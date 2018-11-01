@@ -41,21 +41,21 @@ public class AutoPurchase {
     }
 
     public void generateTransactionsRecord(){
-        List<CombinationVO> combinationVOS = ArbitrageUtil.getOptCombination(optionDAO.findCurrentOptions()).stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
-        //此处combinations的长度在200以上，故需缩减
-        combinationVOS = combinationVOS.subList(0, 1);
-
-        LocalDateTime origin = LocalDateTime.now().minusMonths(1).plusDays(5);
-        LocalDateTime endDay = LocalDateTime.now().minusDays(5);
-        for (LocalDateTime endDate = origin.plusDays(10); endDate.isBefore(endDay); endDate = endDate.plusDays(10)){
-
+        LocalDateTime origin = LocalDateTime.now().minusMonths(3);
+        LocalDateTime endDay = LocalDateTime.now();
+        for (LocalDateTime endDate = origin.plusDays(1); endDate.isBefore(endDay); endDate = endDate.plusDays(1)){
+            List<CombinationVO> combinationVOS = ArbitrageUtil.getOptCombination(optionDAO.findPastOptions(endDate))
+                    .stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+            if (!combinationVOS.isEmpty()){
+                combinationVOS = combinationVOS.subList(0, 1);
+            }
 
             for (CombinationVO combinationVO : combinationVOS) {
                 int indicator = calcPotentialProfits(combinationVO, origin, endDate);
                 if (indicator != 0){
                     Combination combination = combinationVO.toCombination();
                     combination.setTime(endDate);
-                    combination.setUserId("hh");
+                    combination.setUserId("Logan");
                     combination.setState(CombinationState.PURCHASED);
                     combinationBl.trade(combination, TransactionType.OPEN, indicator==1, endDate);
                     combinationDAO.saveAndFlush(combination);
@@ -67,6 +67,7 @@ public class AutoPurchase {
             for (Combination combination : combinations1dAgo) {//close these 1 day ago if they should be closed
                 if (isToClose(combination, endDate.minusDays(1).toLocalDate())){
                     combination.setTime(endDate);
+                    combination.setUserId("Logan");
                     combination.setState(CombinationState.SOLD);
                     combinationBl.trade(combination, TransactionType.CLOSE,
                             combination.getEvaluation().getTerm1()>=combination.getEvaluation().getTerm2(), endDate);
@@ -85,6 +86,7 @@ public class AutoPurchase {
                     }
                     if (!isSold){
                         combination.setTime(endDate);
+                        combination.setUserId("Logan");
                         combination.setState(CombinationState.SOLD);
                         combinationBl.trade(combination, TransactionType.CLOSE,
                                 combination.getEvaluation().getTerm1()>=combination.getEvaluation().getTerm2(), endDate);
